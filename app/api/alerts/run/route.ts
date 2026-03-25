@@ -106,7 +106,6 @@ export async function GET(request: Request) {
       }
 
       sent++
-      console.log(`Alert sent to ${email}`)
     } catch (err) {
       console.error(`Failed for ${company.company_number}`, err)
     }

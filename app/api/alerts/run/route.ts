@@ -4,19 +4,26 @@ import { calculateCompliance } from '@/lib/compliance'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 function shouldAlert(days: number) {
   return days <= 14
 }
 
 export async function GET(request: Request) {
-      const authHeader = request.headers.get('authorization')
+  const authHeader = request.headers.get('authorization')
 
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  
+
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json({ error: 'RESEND_API_KEY is missing' }, { status: 500 })
+  }
+
+  if (!process.env.ALERT_FROM_EMAIL) {
+    return NextResponse.json({ error: 'ALERT_FROM_EMAIL is missing' }, { status: 500 })
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const supabase = createAdminClient()
 
   const { data: companies, error } = await supabase
@@ -80,7 +87,7 @@ export async function GET(request: Request) {
       }
 
       const sendResult = await resend.emails.send({
-        from: process.env.ALERT_FROM_EMAIL!,
+        from: process.env.ALERT_FROM_EMAIL,
         to: email,
         subject: `⚠️ Compliance alert for ${company.company_name}`,
         html: `

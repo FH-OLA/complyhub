@@ -134,7 +134,7 @@ export async function GET(request: Request) {
           }
 
           const sendResult = await resend.emails.send({
-            from: process.env.ALERT_FROM_EMAIL,
+            from: process.env.ALERT_FROM_EMAIL!,
             to: email,
             subject: `⚠️ Compliance alert for ${company.company_name}`,
             html: `

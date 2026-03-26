@@ -13,9 +13,9 @@ function buildAlertStatus(days: number) {
 }
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
+  const secret = request.headers.get('authorization')?.replace('Bearer ', '')
 
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!secret || secret !== process.env.CRON_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -42,123 +42,144 @@ export async function GET(request: Request) {
   let sent = 0
   let skipped = 0
 
-  for (const company of companies ?? []) {
-    processed++
+  const BATCH_SIZE = 5
 
-    try {
-      const { data: userData } = await supabase.auth.admin.getUserById(company.user_id)
-      const email = userData?.user?.email
+  for (let i = 0; i < (companies?.length || 0); i += BATCH_SIZE) {
+    const batch = (companies ?? []).slice(i, i + BATCH_SIZE)
 
-      if (!email) {
-        skipped++
-        continue
-      }
+    await Promise.all(
+      batch.map(async (company) => {
+        processed++
 
-      const liveData = await fetchCompany(company.company_number)
-      const compliance = calculateCompliance(liveData)
+        try {
+          const { data: userData } = await supabase.auth.admin.getUserById(company.user_id)
+          const email = userData?.user?.email
 
-      if (liveData.company_status !== 'active') {
-        skipped++
-        continue
-      }
+          if (!email) {
+            skipped++
+            return
+          }
 
-      const candidateAlerts: Array<{
-        alertType: string
-        status: string
-        message: string
-      }> = []
+          const liveData = await fetchCompany(company.company_number)
+          const compliance = calculateCompliance(liveData)
 
-      if (shouldAlert(compliance.confirmationStatement.daysRemaining)) {
-        const status = buildAlertStatus(compliance.confirmationStatement.daysRemaining)
-        candidateAlerts.push({
-          alertType: 'confirmation_statement',
-          status,
-          message:
-            compliance.confirmationStatement.daysRemaining < 0
-              ? `Confirmation Statement overdue by ${Math.abs(
-                  compliance.confirmationStatement.daysRemaining
-                )} days`
-              : `Confirmation Statement due in ${compliance.confirmationStatement.daysRemaining} days`,
-        })
-      }
+          if (liveData.company_status !== 'active') {
+            skipped++
+            return
+          }
 
-      if (shouldAlert(compliance.accounts.daysRemaining)) {
-        const status = buildAlertStatus(compliance.accounts.daysRemaining)
-        candidateAlerts.push({
-          alertType: 'accounts_filing',
-          status,
-          message:
-            compliance.accounts.daysRemaining < 0
-              ? `Accounts Filing overdue by ${Math.abs(compliance.accounts.daysRemaining)} days`
-              : `Accounts Filing due in ${compliance.accounts.daysRemaining} days`,
-        })
-      }
+          const candidateAlerts: Array<{
+            alertType: string
+            status: string
+            message: string
+          }> = []
 
-      if (candidateAlerts.length === 0) {
-        skipped++
-        continue
-      }
+          if (shouldAlert(compliance.confirmationStatement.daysRemaining)) {
+            const status = buildAlertStatus(compliance.confirmationStatement.daysRemaining)
+            candidateAlerts.push({
+              alertType: 'confirmation_statement',
+              status,
+              message:
+                compliance.confirmationStatement.daysRemaining < 0
+                  ? `Confirmation Statement overdue by ${Math.abs(
+                      compliance.confirmationStatement.daysRemaining
+                    )} days`
+                  : `Confirmation Statement due in ${compliance.confirmationStatement.daysRemaining} days`,
+            })
+          }
 
-      const alertsToSend: typeof candidateAlerts = []
+          if (shouldAlert(compliance.accounts.daysRemaining)) {
+            const status = buildAlertStatus(compliance.accounts.daysRemaining)
+            candidateAlerts.push({
+              alertType: 'accounts_filing',
+              status,
+              message:
+                compliance.accounts.daysRemaining < 0
+                  ? `Accounts Filing overdue by ${Math.abs(compliance.accounts.daysRemaining)} days`
+                  : `Accounts Filing due in ${compliance.accounts.daysRemaining} days`,
+            })
+          }
 
-      for (const alert of candidateAlerts) {
-        const { data: recentAlert } = await supabase
-          .from('alert_history')
-          .select('id, sent_at')
-          .eq('user_id', company.user_id)
-          .eq('company_number', company.company_number)
-          .eq('alert_type', alert.alertType)
-          .eq('status', alert.status)
-          .gte(
-            'sent_at',
-            new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-          )
-          .order('sent_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
+          if (candidateAlerts.length === 0) {
+            skipped++
+            return
+          }
 
-        if (!recentAlert) {
-          alertsToSend.push(alert)
+          const alertsToSend: typeof candidateAlerts = []
+
+          for (const alert of candidateAlerts) {
+            const { data: recentAlert } = await supabase
+              .from('alert_history')
+              .select('id, sent_at')
+              .eq('user_id', company.user_id)
+              .eq('company_number', company.company_number)
+              .eq('alert_type', alert.alertType)
+              .eq('status', alert.status)
+              .gte(
+                'sent_at',
+                new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+              )
+              .order('sent_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+
+            if (!recentAlert) {
+              alertsToSend.push(alert)
+            }
+          }
+
+          if (alertsToSend.length === 0) {
+            skipped++
+            return
+          }
+
+          const sendResult = await resend.emails.send({
+            from: process.env.ALERT_FROM_EMAIL,
+            to: email,
+            subject: `⚠️ Compliance alert for ${company.company_name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px;">
+                <h2>⚠️ ComplyHub Alert</h2>
+                <p><strong>${company.company_name}</strong> requires attention:</p>
+                <ul>
+                  ${alertsToSend.map((a) => `<li>${a.message}</li>`).join('')}
+                </ul>
+                <p>
+                  <a
+                    href="https://complyhub.uk/my-companies"
+                    style="display:inline-block;padding:10px 16px;background:#6366f1;color:#ffffff;text-decoration:none;border-radius:6px;"
+                  >
+                    View Dashboard
+                  </a>
+                </p>
+                <p style="margin-top:20px;font-size:12px;color:#666;">
+                  You're receiving this because you are monitoring this company in ComplyHub.
+                </p>
+              </div>
+            `,
+          })
+
+          if (sendResult.error) {
+            console.error(`Resend failed for ${email}:`, sendResult.error)
+            return
+          }
+
+          for (const alert of alertsToSend) {
+            await supabase.from('alert_history').insert({
+              user_id: company.user_id,
+              company_number: company.company_number,
+              alert_type: alert.alertType,
+              status: alert.status,
+              sent_at: new Date().toISOString(),
+            })
+          }
+
+          sent++
+        } catch (err) {
+          console.error(`Failed for ${company.company_number}`, err)
         }
-      }
-
-      if (alertsToSend.length === 0) {
-        skipped++
-        continue
-      }
-
-      const sendResult = await resend.emails.send({
-        from: process.env.ALERT_FROM_EMAIL,
-        to: email,
-        subject: `⚠️ Compliance alert for ${company.company_name}`,
-        html: `
-          <h2>⚠️ Compliance Alert</h2>
-          <p><strong>${company.company_name}</strong> needs attention:</p>
-          <ul>
-            ${alertsToSend.map((a) => `<li>${a.message}</li>`).join('')}
-          </ul>
-          <p>Log in to ComplyHub to review.</p>
-        `,
       })
-
-      if (sendResult.error) {
-        console.error(`Resend failed for ${email}:`, sendResult.error)
-        continue
-      }
-
-      for (const alert of alertsToSend) {
-        await supabase.from('alert_history').insert({
-          user_id: company.user_id,
-          company_number: company.company_number,
-          alert_type: alert.alertType,
-          status: alert.status,
-        })
-      }
-
-      sent++
-    } catch (err) {
-      console.error(`Failed for ${company.company_number}`, err)
-    }
+    )
   }
 
   return NextResponse.json({ success: true, processed, sent, skipped })

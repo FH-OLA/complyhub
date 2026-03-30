@@ -41,146 +41,182 @@ export async function GET(request: Request) {
   let processed = 0
   let sent = 0
   let skipped = 0
+  const debug: any[] = []
 
-  const BATCH_SIZE = 5
+  for (const company of companies ?? []) {
+    processed++
 
-  for (let i = 0; i < (companies?.length || 0); i += BATCH_SIZE) {
-    const batch = (companies ?? []).slice(i, i + BATCH_SIZE)
+    try {
+      const row: any = {
+        company_number: company.company_number,
+        company_name: company.company_name,
+      }
 
-    await Promise.all(
-      batch.map(async (company) => {
-        processed++
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(company.user_id)
+      row.user_lookup_error = userError?.message || null
 
-        try {
-          const { data: userData } = await supabase.auth.admin.getUserById(company.user_id)
-          const email = userData?.user?.email
+      const email = userData?.user?.email
+      row.email = email || null
 
-          if (!email) {
-            skipped++
-            return
-          }
+      if (!email) {
+        skipped++
+        row.stage = 'no_email'
+        debug.push(row)
+        continue
+      }
 
-          const liveData = await fetchCompany(company.company_number)
-          const compliance = calculateCompliance(liveData)
+      const liveData = await fetchCompany(company.company_number)
+      row.company_status = liveData.company_status
 
-          if (liveData.company_status !== 'active') {
-            skipped++
-            return
-          }
+      const compliance = calculateCompliance(liveData)
+      row.compliance = {
+        confirmationStatement: compliance.confirmationStatement,
+        accounts: compliance.accounts,
+      }
 
-          const candidateAlerts: Array<{
-            alertType: string
-            status: string
-            message: string
-          }> = []
+      if (liveData.company_status !== 'active') {
+        skipped++
+        row.stage = 'inactive_company'
+        debug.push(row)
+        continue
+      }
 
-          if (shouldAlert(compliance.confirmationStatement.daysRemaining)) {
-            const status = buildAlertStatus(compliance.confirmationStatement.daysRemaining)
-            candidateAlerts.push({
-              alertType: 'confirmation_statement',
-              status,
-              message:
-                compliance.confirmationStatement.daysRemaining < 0
-                  ? `Confirmation Statement overdue by ${Math.abs(
-                      compliance.confirmationStatement.daysRemaining
-                    )} days`
-                  : `Confirmation Statement due in ${compliance.confirmationStatement.daysRemaining} days`,
-            })
-          }
+      const candidateAlerts: Array<{
+        alertType: string
+        status: string
+        message: string
+      }> = []
 
-          if (shouldAlert(compliance.accounts.daysRemaining)) {
-            const status = buildAlertStatus(compliance.accounts.daysRemaining)
-            candidateAlerts.push({
-              alertType: 'accounts_filing',
-              status,
-              message:
-                compliance.accounts.daysRemaining < 0
-                  ? `Accounts Filing overdue by ${Math.abs(compliance.accounts.daysRemaining)} days`
-                  : `Accounts Filing due in ${compliance.accounts.daysRemaining} days`,
-            })
-          }
+      if (shouldAlert(compliance.confirmationStatement.daysRemaining)) {
+        const status = buildAlertStatus(compliance.confirmationStatement.daysRemaining)
+        candidateAlerts.push({
+          alertType: 'confirmation_statement',
+          status,
+          message:
+            compliance.confirmationStatement.daysRemaining < 0
+              ? `Confirmation Statement overdue by ${Math.abs(
+                  compliance.confirmationStatement.daysRemaining
+                )} days`
+              : `Confirmation Statement due in ${compliance.confirmationStatement.daysRemaining} days`,
+        })
+      }
 
-          if (candidateAlerts.length === 0) {
-            skipped++
-            return
-          }
+      if (shouldAlert(compliance.accounts.daysRemaining)) {
+        const status = buildAlertStatus(compliance.accounts.daysRemaining)
+        candidateAlerts.push({
+          alertType: 'accounts_filing',
+          status,
+          message:
+            compliance.accounts.daysRemaining < 0
+              ? `Accounts Filing overdue by ${Math.abs(compliance.accounts.daysRemaining)} days`
+              : `Accounts Filing due in ${compliance.accounts.daysRemaining} days`,
+        })
+      }
 
-          const alertsToSend: typeof candidateAlerts = []
+      row.candidateAlerts = candidateAlerts
 
-          for (const alert of candidateAlerts) {
-            const { data: recentAlert } = await supabase
-              .from('alert_history')
-              .select('id, sent_at')
-              .eq('user_id', company.user_id)
-              .eq('company_number', company.company_number)
-              .eq('alert_type', alert.alertType)
-              .eq('status', alert.status)
-              .gte(
-                'sent_at',
-                new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-              )
-              .order('sent_at', { ascending: false })
-              .limit(1)
-              .maybeSingle()
+      if (candidateAlerts.length === 0) {
+        skipped++
+        row.stage = 'no_candidate_alerts'
+        debug.push(row)
+        continue
+      }
 
-            if (!recentAlert) {
-              alertsToSend.push(alert)
-            }
-          }
+      const alertsToSend: typeof candidateAlerts = []
 
-          if (alertsToSend.length === 0) {
-            skipped++
-            return
-          }
+      for (const alert of candidateAlerts) {
+        const { data: recentAlert, error: recentAlertError } = await supabase
+          .from('alert_history')
+          .select('id, sent_at')
+          .eq('user_id', company.user_id)
+          .eq('company_number', company.company_number)
+          .eq('alert_type', alert.alertType)
+          .eq('status', alert.status)
+          .gte('sent_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+          .order('sent_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
 
-          const sendResult = await resend.emails.send({
-            from: process.env.ALERT_FROM_EMAIL!,
-            to: email,
-            subject: `⚠️ Compliance alert for ${company.company_name}`,
-            html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px;">
-                <h2>⚠️ ComplyHub Alert</h2>
-                <p><strong>${company.company_name}</strong> requires attention:</p>
-                <ul>
-                  ${alertsToSend.map((a) => `<li>${a.message}</li>`).join('')}
-                </ul>
-                <p>
-                  <a
-                    href="https://complyhub.uk/my-companies"
-                    style="display:inline-block;padding:10px 16px;background:#6366f1;color:#ffffff;text-decoration:none;border-radius:6px;"
-                  >
-                    View Dashboard
-                  </a>
-                </p>
-                <p style="margin-top:20px;font-size:12px;color:#666;">
-                  You're receiving this because you are monitoring this company in ComplyHub.
-                </p>
-              </div>
-            `,
-          })
-
-          if (sendResult.error) {
-            console.error(`Resend failed for ${email}:`, sendResult.error)
-            return
-          }
-
-          for (const alert of alertsToSend) {
-            await supabase.from('alert_history').insert({
-              user_id: company.user_id,
-              company_number: company.company_number,
-              alert_type: alert.alertType,
-              status: alert.status,
-              sent_at: new Date().toISOString(),
-            })
-          }
-
-          sent++
-        } catch (err) {
-          console.error(`Failed for ${company.company_number}`, err)
+        if (recentAlertError) {
+          row.recent_alert_error = recentAlertError.message
         }
+
+        if (!recentAlert) {
+          alertsToSend.push(alert)
+        }
+      }
+
+      row.alertsToSend = alertsToSend
+
+      if (alertsToSend.length === 0) {
+        skipped++
+        row.stage = 'duplicate_alerts_blocked'
+        debug.push(row)
+        continue
+      }
+
+      const sendResult = await resend.emails.send({
+        from: process.env.ALERT_FROM_EMAIL!,
+        to: email,
+        subject: `⚠️ Compliance alert for ${company.company_name}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px;">
+            <h2>⚠️ ComplyHub Alert</h2>
+            <p><strong>${company.company_name}</strong> requires attention:</p>
+            <ul>
+              ${alertsToSend.map((a) => `<li>${a.message}</li>`).join('')}
+            </ul>
+            <p>
+              <a
+                href="https://complyhub.uk/my-companies"
+                style="display:inline-block;padding:10px 16px;background:#6366f1;color:#ffffff;text-decoration:none;border-radius:6px;"
+              >
+                View Dashboard
+              </a>
+            </p>
+          </div>
+        `,
       })
-    )
+
+      row.sendResult = sendResult
+
+      if (sendResult.error) {
+        skipped++
+        row.stage = 'send_failed'
+        debug.push(row)
+        continue
+      }
+
+      for (const alert of alertsToSend) {
+        const { error: insertError } = await supabase.from('alert_history').insert({
+          user_id: company.user_id,
+          company_number: company.company_number,
+          alert_type: alert.alertType,
+          status: alert.status,
+          sent_at: new Date().toISOString(),
+        })
+
+        if (insertError) {
+          row.insert_error = insertError.message
+          skipped++
+          row.stage = 'history_insert_failed'
+          debug.push(row)
+          return NextResponse.json({ success: true, processed, sent, skipped, debug })
+        }
+      }
+
+      sent++
+      row.stage = 'sent'
+      debug.push(row)
+    } catch (err) {
+      skipped++
+      debug.push({
+        company_number: company.company_number,
+        stage: 'exception',
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
   }
 
-  return NextResponse.json({ success: true, processed, sent, skipped })
+  return NextResponse.json({ success: true, processed, sent, skipped, debug })
 }

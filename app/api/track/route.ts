@@ -36,7 +36,15 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { company_number, company_name } = body
+const company_number = body.company_number?.trim().toUpperCase()
+const company_name = body.company_name?.trim()
+
+if (!company_number || !company_name) {
+  return NextResponse.json(
+    { error: 'company_number and company_name are required' },
+    { status: 400 }
+  )
+}
 
   const { error } = await supabase.from('tracked_companies').insert({
     user_id: user.id,

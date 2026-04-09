@@ -116,22 +116,31 @@ export default async function MyCompaniesPage() {
         <>
           <div className="mb-8 flex justify-center">
             <div className="grid w-full max-w-3xl gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <p className="text-sm font-medium text-gray-500">Total Companies</p>
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs uppercase tracking-wide text-gray-500">Total Companies</p>
                 <p className="mt-2 text-3xl font-bold text-gray-900">{total}</p>
               </div>
 
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-                <p className="text-sm font-medium text-amber-700">Due Soon</p>
+              <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs uppercase tracking-wide text-amber-700">Due Soon</p>
                 <p className="mt-2 text-3xl font-bold text-amber-900">{dueSoon}</p>
               </div>
 
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm">
-                <p className="text-sm font-medium text-red-700">Overdue</p>
+              <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-5 shadow-sm transition hover:shadow-md">
+                <p className="text-xs uppercase tracking-wide text-red-700">Overdue</p>
                 <p className="mt-2 text-3xl font-bold text-red-900">{overdue}</p>
               </div>
             </div>
           </div>
+
+          {overdue > 0 && (
+            <div className="mb-6 flex justify-center">
+              <div className="w-full max-w-3xl rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                ⚠️ You have <strong>{overdue}</strong> overdue compliance item(s). Take action now
+                to avoid penalties.
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-center">
             <div className="grid w-full max-w-3xl gap-6">
@@ -162,6 +171,3 @@ export default async function MyCompaniesPage() {
           </div>
         </>
       )}
-    </div>
-  )
-}

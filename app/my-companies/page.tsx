@@ -52,12 +52,35 @@ export default async function MyCompaniesPage() {
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
 
-  const total = companies?.length || 0
-
   const results: CompanyResult[] =
     companies && companies.length > 0
       ? await Promise.all((companies as TrackedCompany[]).map(fetchCompanyResult))
       : []
+
+  const total = results.length
+
+  const dueSoon = results.filter(({ compliance, error }) => {
+    if (error || !compliance) return false
+
+    const csDueSoon =
+      compliance.confirmationStatement.daysRemaining >= 0 &&
+      compliance.confirmationStatement.daysRemaining <= 14
+
+    const accountsDueSoon =
+      compliance.accounts.daysRemaining >= 0 &&
+      compliance.accounts.daysRemaining <= 14
+
+    return csDueSoon || accountsDueSoon
+  }).length
+
+  const overdue = results.filter(({ compliance, error }) => {
+    if (error || !compliance) return false
+
+    return (
+      compliance.confirmationStatement.daysRemaining < 0 ||
+      compliance.accounts.daysRemaining < 0
+    )
+  }).length
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
@@ -91,13 +114,21 @@ export default async function MyCompaniesPage() {
 
       {results.length > 0 && (
         <>
-          <div className="mb-6 flex justify-center">
-            <div className="w-full max-w-3xl rounded-2xl bg-gray-900 p-5 text-white shadow-sm">
-              <h2 className="mb-3 text-lg font-semibold">📊 Your Compliance Overview</h2>
-              <div className="flex flex-wrap gap-4 text-sm">
-                <div className="rounded-full bg-white/10 px-4 py-2">
-                  🏢 <span className="font-semibold">{total}</span> Companies
-                </div>
+          <div className="mb-8 flex justify-center">
+            <div className="grid w-full max-w-3xl gap-4 md:grid-cols-3">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <p className="text-sm font-medium text-gray-500">Total Companies</p>
+                <p className="mt-2 text-3xl font-bold text-gray-900">{total}</p>
+              </div>
+
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+                <p className="text-sm font-medium text-amber-700">Due Soon</p>
+                <p className="mt-2 text-3xl font-bold text-amber-900">{dueSoon}</p>
+              </div>
+
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm">
+                <p className="text-sm font-medium text-red-700">Overdue</p>
+                <p className="mt-2 text-3xl font-bold text-red-900">{overdue}</p>
               </div>
             </div>
           </div>

@@ -82,27 +82,38 @@ export default async function MyCompaniesPage() {
     )
   }).length
 
+  const hasReachedFreeLimit = total >= 1
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-  <div>
-    <h1 className="text-4xl font-bold tracking-tight text-gray-900">My Companies</h1>
-    <p className="mt-3 text-base text-gray-600">
-      Live compliance status for your tracked companies.
-    </p>
-  </div>
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900">My Companies</h1>
+          <p className="mt-3 text-base text-gray-600">
+            Live compliance status for your tracked companies.
+          </p>
+        </div>
 
-  <a
-    href="/dashboard"
-    className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-  >
-    + Track another company
-  </a>
-  <p className="text-xs text-gray-500 md:text-right">
-  You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
-  <span className="font-semibold text-gray-700">1</span> free company slot.
-</p>
-</div>
+        <div className="flex flex-col items-start gap-2 md:items-end">
+          {hasReachedFreeLimit ? (
+            <div className="inline-flex cursor-not-allowed items-center justify-center rounded-xl bg-gray-300 px-4 py-2.5 text-sm font-semibold text-white shadow-sm">
+              + Track another company
+            </div>
+          ) : (
+            <a
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            >
+              + Track another company
+            </a>
+          )}
+
+          <p className="text-xs text-gray-500 md:text-right">
+            You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
+            <span className="font-semibold text-gray-700">1</span> free company slot.
+          </p>
+        </div>
+      </div>
 
       <div className="mb-8 h-px bg-gray-200" />
 

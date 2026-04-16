@@ -98,6 +98,10 @@ export default async function MyCompaniesPage() {
   >
     + Track another company
   </a>
+  <p className="text-xs text-gray-500 md:text-right">
+  You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
+  <span className="font-semibold text-gray-700">1</span> free company slot.
+</p>
 </div>
 
       <div className="mb-8 h-px bg-gray-200" />

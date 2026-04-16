@@ -112,6 +112,15 @@ export default async function MyCompaniesPage() {
             You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
             <span className="font-semibold text-gray-700">1</span> free company slot.
           </p>
+
+          {hasReachedFreeLimit && (
+            <a
+              href="/pricing"
+              className="text-xs font-semibold text-indigo-600 transition hover:text-indigo-700"
+            >
+              Upgrade to track more companies →
+            </a>
+          )}
         </div>
       </div>
 

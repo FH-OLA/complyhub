@@ -36,9 +36,12 @@ export default function PricingPage() {
             <li>✔ Future features</li>
           </ul>
 
-          <button className="mt-8 w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
-            Upgrade to Pro
-          </button>
+          <a
+  href="/upgrade"
+  className="mt-8 inline-block w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+>
+  Upgrade to Pro
+</a>
         </div>
 
       </div>

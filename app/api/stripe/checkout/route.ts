@@ -9,10 +9,20 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export async function POST() {
   try {
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
     if (!user || !user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!process.env.STRIPE_PRICE_ID) {
+      return NextResponse.json({ error: 'STRIPE_PRICE_ID is missing' }, { status: 500 })
+    }
+
+    if (!process.env.NEXT_PUBLIC_BASE_URL) {
+      return NextResponse.json({ error: 'NEXT_PUBLIC_BASE_URL is missing' }, { status: 500 })
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -21,7 +31,7 @@ export async function POST() {
       customer_email: user.email,
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID!,
+          price: process.env.STRIPE_PRICE_ID,
           quantity: 1,
         },
       ],
@@ -29,6 +39,7 @@ export async function POST() {
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/upgrade`,
       metadata: {
         user_id: user.id,
+        plan: 'pro',
       },
     })
 

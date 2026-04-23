@@ -32,7 +32,6 @@ export default function UpgradePage() {
     <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center px-4 py-16">
       <div className="grid w-full gap-8 md:grid-cols-2">
         
-        {/* LEFT SIDE */}
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
             Upgrade to Pro
@@ -55,7 +54,6 @@ export default function UpgradePage() {
           </ul>
         </div>
 
-        {/* RIGHT SIDE */}
         <div className="rounded-2xl border-2 border-indigo-600 bg-white p-8 shadow-md">
           <h2 className="text-xl font-semibold text-gray-900">ComplyHub Pro</h2>
 

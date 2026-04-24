@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2026-03-25.dahlia',
 })
 
 export async function POST() {
@@ -27,7 +27,6 @@ export async function POST() {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      payment_method_types: ['card'],
       customer_email: user.email,
       line_items: [
         {
@@ -45,7 +44,7 @@ export async function POST() {
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error('Stripe error:', error)
+    console.error('Stripe checkout error:', error)
     return NextResponse.json({ error: 'Stripe error' }, { status: 500 })
   }
 }

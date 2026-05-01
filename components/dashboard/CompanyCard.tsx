@@ -6,7 +6,6 @@ type Props = {
 
 function formatDays(days: number) {
   if (days < 0) return `Overdue by ${Math.abs(days)} days`
-  if (days <= 30) return `Due in ${days} days`
   return `Due in ${days} days`
 }
 
@@ -25,6 +24,7 @@ export default function CompanyCard({ company }: Props) {
 
   useEffect(() => {
     setCheckingTracked(true)
+
     fetch(`/api/track?company_number=${encodeURIComponent(company.company_number)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -35,10 +35,8 @@ export default function CompanyCard({ company }: Props) {
 
   return (
     <div className="mt-6 max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
-      {/* Company Name */}
       <h2 className="text-2xl font-bold text-gray-900">{company.company_name}</h2>
 
-      {/* Status */}
       <p
         className={`mt-1 font-semibold ${
           company.company_status === 'active' ? 'text-green-600' : 'text-red-600'
@@ -47,14 +45,12 @@ export default function CompanyCard({ company }: Props) {
         {company.company_status === 'active' ? '🟢 Active' : '🔴 Dissolved'}
       </p>
 
-      {/* Address */}
       <p className="mt-2 text-sm text-gray-600">
         {company.registered_office_address?.address_line_1},{' '}
         {company.registered_office_address?.locality},{' '}
         {company.registered_office_address?.postal_code}
       </p>
 
-      {/* Compliance Section */}
       <div className="mt-6">
         <h3 className="mb-3 text-sm font-semibold text-gray-800">
           Compliance Status
@@ -69,7 +65,6 @@ export default function CompanyCard({ company }: Props) {
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Confirmation Statement */}
             <div className="flex justify-between rounded-xl bg-gray-50 p-4">
               <span className="text-sm text-gray-700">Confirmation Statement</span>
               <span
@@ -81,7 +76,6 @@ export default function CompanyCard({ company }: Props) {
               </span>
             </div>
 
-            {/* Accounts */}
             <div className="flex justify-between rounded-xl bg-gray-50 p-4">
               <span className="text-sm text-gray-700">Accounts Filing</span>
               <span
@@ -108,7 +102,6 @@ export default function CompanyCard({ company }: Props) {
         </div>
       )}
 
-      {/* Track Button */}
       <button
         disabled={loading || tracked || checkingTracked}
         onClick={async () => {
@@ -116,32 +109,41 @@ export default function CompanyCard({ company }: Props) {
           setMessage(null)
           setErrorMsg(null)
 
-          const res = await fetch('/api/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              company_number: company.company_number,
-              company_name: company.company_name,
-            }),
-          })
+          try {
+            const res = await fetch('/api/track', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                company_number: company.company_number,
+                company_name: company.company_name,
+              }),
+            })
 
-          const data = await res.json()
+            const data = await res.json()
 
-          setLoading(false)
+            if (!res.ok) {
+              if (res.status === 403) {
+                window.location.href = '/upgrade'
+                return
+              }
 
-          if (!res.ok) {
-            if (data.error?.includes('already')) {
-              setTracked(true)
-              setErrorMsg('You are already tracking this company')
+              if (data.error?.includes('already')) {
+                setTracked(true)
+                setErrorMsg('You are already tracking this company')
+                return
+              }
+
+              setErrorMsg(data.error || 'Failed to track company')
               return
             }
 
-            setErrorMsg(data.error || 'Failed to track company')
-            return
+            setTracked(true)
+            setMessage('Company tracked successfully!')
+          } catch {
+            setErrorMsg('Something went wrong. Please try again.')
+          } finally {
+            setLoading(false)
           }
-
-          setTracked(true)
-          setMessage('Company tracked successfully!')
         }}
         className={`mt-6 w-full rounded-xl py-2 text-white ${
           tracked || loading || checkingTracked
@@ -149,7 +151,13 @@ export default function CompanyCard({ company }: Props) {
             : 'bg-black hover:bg-gray-800'
         }`}
       >
-        {checkingTracked ? 'Checking...' : tracked ? 'Already Tracking' : loading ? 'Tracking...' : 'Track this company'}
+        {checkingTracked
+          ? 'Checking...'
+          : tracked
+            ? 'Already Tracking'
+            : loading
+              ? 'Tracking...'
+              : 'Track this company'}
       </button>
     </div>
   )

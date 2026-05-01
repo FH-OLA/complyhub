@@ -46,6 +46,14 @@ export default async function MyCompaniesPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const { data: subscription } = await supabase
+    .from('user_subscriptions')
+    .select('plan, status')
+    .eq('user_id', user!.id)
+    .maybeSingle()
+
+  const isProUser = subscription?.plan === 'pro' && subscription?.status === 'active'
+
   const { data: companies, error: dbError } = await supabase
     .from('tracked_companies')
     .select('id, company_name, company_number, created_at')
@@ -62,15 +70,12 @@ export default async function MyCompaniesPage() {
   const dueSoon = results.filter(({ compliance, error }) => {
     if (error || !compliance) return false
 
-    const csDueSoon =
-      compliance.confirmationStatement.daysRemaining >= 0 &&
-      compliance.confirmationStatement.daysRemaining <= 14
-
-    const accountsDueSoon =
-      compliance.accounts.daysRemaining >= 0 &&
-      compliance.accounts.daysRemaining <= 14
-
-    return csDueSoon || accountsDueSoon
+    return (
+      (compliance.confirmationStatement.daysRemaining >= 0 &&
+        compliance.confirmationStatement.daysRemaining <= 14) ||
+      (compliance.accounts.daysRemaining >= 0 &&
+        compliance.accounts.daysRemaining <= 14)
+    )
   }).length
 
   const overdue = results.filter(({ compliance, error }) => {
@@ -82,13 +87,26 @@ export default async function MyCompaniesPage() {
     )
   }).length
 
-  const hasReachedFreeLimit = total >= 1
+  const hasReachedFreeLimit = !isProUser && total >= 1
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">My Companies</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">My Companies</h1>
+
+            {isProUser ? (
+              <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                Pro plan
+              </span>
+            ) : (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
+                Free plan
+              </span>
+            )}
+          </div>
+
           <p className="mt-3 text-base text-gray-600">
             Live compliance status for your tracked companies.
           </p>
@@ -108,18 +126,26 @@ export default async function MyCompaniesPage() {
             </a>
           )}
 
-          <p className="text-xs text-gray-500 md:text-right">
-            You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
-            <span className="font-semibold text-gray-700">1</span> free company slot.
-          </p>
+          {isProUser ? (
+            <p className="text-xs font-medium text-indigo-600 md:text-right">
+              Pro active — unlimited company tracking enabled.
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 md:text-right">
+                You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
+                <span className="font-semibold text-gray-700">1</span> free company slot.
+              </p>
 
-          {hasReachedFreeLimit && (
-            <a
-              href="/pricing"
-              className="text-xs font-semibold text-indigo-600 transition hover:text-indigo-700"
-            >
-              Upgrade to track more companies →
-            </a>
+              {hasReachedFreeLimit && (
+                <a
+                  href="/upgrade"
+                  className="text-xs font-semibold text-indigo-600 transition hover:text-indigo-700"
+                >
+                  Upgrade to track more companies →
+                </a>
+              )}
+            </>
           )}
         </div>
       </div>

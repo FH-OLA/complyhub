@@ -48,6 +48,14 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  const { data: subscription } = await supabase
+    .from('user_subscriptions')
+    .select('plan, status')
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  const isProUser = subscription?.plan === 'pro' && subscription?.status === 'active'
+
   const { count, error: countError } = await supabase
     .from('tracked_companies')
     .select('*', { count: 'exact', head: true })
@@ -61,7 +69,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  if ((count || 0) >= 1) {
+  if (!isProUser && (count || 0) >= 1) {
     return NextResponse.json(
       { error: 'Free plan limit reached. Upgrade to track more companies.' },
       { status: 403 }

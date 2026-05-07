@@ -24,24 +24,15 @@ async function fetchCompanyResult(tracked: TrackedCompany): Promise<CompanyResul
     const liveData = await fetchCompany(tracked.company_number)
     const compliance = calculateCompliance(liveData)
 
-    return {
-      tracked,
-      liveData,
-      compliance,
-      error: null,
-    }
+    return { tracked, liveData, compliance, error: null }
   } catch {
-    return {
-      tracked,
-      liveData: null,
-      compliance: null,
-      error: 'Could not load live data',
-    }
+    return { tracked, liveData: null, compliance: null, error: 'Could not load live data' }
   }
 }
 
 export default async function MyCompaniesPage() {
   const supabase = await createClient()
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -91,10 +82,11 @@ export default async function MyCompaniesPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* HEADER */}
       <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900">My Companies</h1>
+            <h1 className="text-4xl font-bold text-gray-900">My Companies</h1>
 
             {isProUser ? (
               <span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
@@ -108,41 +100,41 @@ export default async function MyCompaniesPage() {
           </div>
 
           <p className="mt-3 text-base text-gray-600">
-            Live compliance status for your tracked companies.
+            Live compliance tracking for your companies.
           </p>
         </div>
 
+        {/* ACTION AREA */}
         <div className="flex flex-col items-start gap-2 md:items-end">
           {hasReachedFreeLimit ? (
-            <div className="inline-flex cursor-not-allowed items-center justify-center rounded-xl bg-gray-300 px-4 py-2.5 text-sm font-semibold text-white shadow-sm">
+            <div className="cursor-not-allowed rounded-xl bg-gray-300 px-4 py-2.5 text-sm font-semibold text-white">
               + Track another company
             </div>
           ) : (
             <a
               href="/dashboard"
-              className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+              className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
             >
               + Track another company
             </a>
           )}
 
           {isProUser ? (
-            <p className="text-xs font-medium text-indigo-600 md:text-right">
-              Pro active — unlimited company tracking enabled.
+            <p className="text-xs text-indigo-600 font-medium">
+              Pro active — unlimited tracking enabled.
             </p>
           ) : (
             <>
-              <p className="text-xs text-gray-500 md:text-right">
-                You’re using <span className="font-semibold text-gray-700">{total}</span> of{' '}
-                <span className="font-semibold text-gray-700">1</span> free company slot.
+              <p className="text-xs font-medium text-red-600">
+                You’ve reached your free limit. Upgrade to continue tracking companies.
               </p>
 
               {hasReachedFreeLimit && (
                 <a
                   href="/upgrade"
-                  className="text-xs font-semibold text-indigo-600 transition hover:text-indigo-700"
+                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
                 >
-                  Upgrade to track more companies →
+                  Upgrade now →
                 </a>
               )}
             </>
@@ -152,81 +144,72 @@ export default async function MyCompaniesPage() {
 
       <div className="mb-8 h-px bg-gray-200" />
 
+      {/* ERROR */}
       {dbError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-xl bg-red-50 p-4 text-red-700 text-sm">
           Failed to load companies: {dbError.message}
         </div>
       )}
 
+      {/* EMPTY STATE */}
       {!dbError && results.length === 0 && (
-        <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
-          <p className="text-sm font-medium text-gray-600">No companies tracked yet.</p>
-          <p className="mt-2 text-sm text-gray-400">
-            Use the{' '}
-            <a href="/dashboard" className="font-medium text-indigo-600 underline">
-              Dashboard
-            </a>{' '}
-            to look up and track a company.
-          </p>
+        <div className="rounded-xl border p-10 text-center">
+          <p className="text-sm text-gray-600">No companies tracked yet.</p>
         </div>
       )}
 
+      {/* CONTENT */}
       {results.length > 0 && (
         <>
-          <div className="mb-8 flex justify-center">
-            <div className="grid w-full max-w-3xl gap-4 md:grid-cols-3">
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs uppercase tracking-wide text-gray-500">Total Companies</p>
-                <p className="mt-2 text-3xl font-bold text-gray-900">{total}</p>
-              </div>
+          {/* STATS */}
+          <div className="mb-8 grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border p-5">
+              <p className="text-xs text-gray-500">Total</p>
+              <p className="text-2xl font-bold">{total}</p>
+            </div>
 
-              <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs uppercase tracking-wide text-amber-700">Due Soon</p>
-                <p className="mt-2 text-3xl font-bold text-amber-900">{dueSoon}</p>
-              </div>
+            <div className="rounded-xl border p-5 bg-amber-50">
+              <p className="text-xs text-amber-700">Due Soon</p>
+              <p className="text-2xl font-bold">{dueSoon}</p>
+            </div>
 
-              <div className="rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-5 shadow-sm transition hover:shadow-md">
-                <p className="text-xs uppercase tracking-wide text-red-700">Overdue</p>
-                <p className="mt-2 text-3xl font-bold text-red-900">{overdue}</p>
-              </div>
+            <div className="rounded-xl border p-5 bg-red-50">
+              <p className="text-xs text-red-700">Overdue</p>
+              <p className="text-2xl font-bold">{overdue}</p>
             </div>
           </div>
 
-          {overdue > 0 && (
-            <div className="mb-6 flex justify-center">
-              <div className="w-full max-w-3xl rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                ⚠️ You have <strong>{overdue}</strong> overdue compliance item(s). Take action now
-                to avoid penalties.
-              </div>
+          {/* 🔥 PRO PREVIEW CARD */}
+          {!isProUser && (
+            <div className="mb-6 rounded-xl border border-dashed p-6 text-center">
+              <p className="text-sm text-gray-500">
+                + Track another company{' '}
+                <span className="font-semibold text-indigo-600">(Pro only)</span>
+              </p>
             </div>
           )}
 
-          <div className="flex justify-center">
-            <div className="grid w-full max-w-3xl gap-6">
-              {results.map(({ tracked, liveData, compliance, error }) => {
-                if (error || !liveData || !compliance) {
-                  return (
-                    <div
-                      key={tracked.id}
-                      className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-                    >
-                      <p className="text-lg font-semibold text-gray-900">{tracked.company_name}</p>
-                      <p className="mt-1 text-sm text-gray-500">#{tracked.company_number}</p>
-                      <p className="mt-4 text-sm text-red-600">{error}</p>
-                    </div>
-                  )
-                }
-
+          {/* COMPANY LIST */}
+          <div className="grid gap-6">
+            {results.map(({ tracked, liveData, compliance, error }) => {
+              if (error || !liveData || !compliance) {
                 return (
-                  <TrackedCompanyCard
-                    key={tracked.id}
-                    trackedId={tracked.id}
-                    company={liveData}
-                    compliance={compliance}
-                  />
+                  <div key={tracked.id} className="rounded-xl border p-6">
+                    <p className="font-semibold">{tracked.company_name}</p>
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
                 )
-              })}
-            </div>
+              }
+
+              return (
+                <TrackedCompanyCard
+                  key={tracked.id}
+                  trackedId={tracked.id}
+                  company={liveData}
+                  compliance={compliance}
+                />
+              )
+            })}
           </div>
         </>
       )}

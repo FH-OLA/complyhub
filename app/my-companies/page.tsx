@@ -203,11 +203,12 @@ export default async function MyCompaniesPage() {
 
               return (
                 <TrackedCompanyCard
-                  key={tracked.id}
-                  trackedId={tracked.id}
-                  company={liveData}
-                  compliance={compliance}
-                />
+  key={tracked.id}
+  trackedId={tracked.id}
+  company={liveData}
+  compliance={compliance}
+  isProUser={isProUser}
+/>
               )
             })}
           </div>

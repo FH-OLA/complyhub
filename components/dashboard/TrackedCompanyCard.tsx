@@ -8,6 +8,7 @@ interface Props {
   trackedId: string
   company: CompaniesHouseCompany
   compliance: ComplianceResult
+  isProUser: boolean
 }
 
 function CompanyStatusBadge({ status }: { status: string }) {
@@ -48,7 +49,7 @@ function CompliancePill({
   )
 }
 
-export default function TrackedCompanyCard({ trackedId, company, compliance }: Props) {
+export default function TrackedCompanyCard({ trackedId, company, compliance, isProUser }: Props) {
     const [removing, setRemoving] = useState(false)
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">

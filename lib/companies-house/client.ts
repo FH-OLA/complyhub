@@ -30,7 +30,6 @@ export interface CompaniesHouseCompany {
 }
 export async function fetchCompany(companyNumber: string): Promise<CompaniesHouseCompany> {
   const apiKey = process.env.COMPANIES_HOUSE_API_KEY
-console.log("API KEY:", apiKey)
   if (!apiKey) {
     throw new Error('COMPANIES_HOUSE_API_KEY is not configured')
   }

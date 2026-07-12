@@ -3,13 +3,12 @@ import { fetchCompany } from '@/lib/companies-house/client'
 import { createClient } from '@/lib/supabase/server'
 import { calculateCompliance } from '@/lib/compliance'
 export async function GET(request: NextRequest) {
-  // Require authentication
- // const supabase = await createClient()
- // const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
- // if (!user) {
- //   return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
- // }
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+  }
 
   const companyNumber = request.nextUrl.searchParams.get('number')
 

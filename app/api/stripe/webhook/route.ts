@@ -60,6 +60,18 @@ export async function POST(req: Request) {
     }
   }
 
+  if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object as Stripe.Subscription
+
+    await supabase
+      .from('user_subscriptions')
+      .update({
+        status: subscription.status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('stripe_subscription_id', subscription.id)
+  }
+
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription
 
@@ -71,6 +83,22 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString(),
       })
       .eq('stripe_subscription_id', subscription.id)
+  }
+
+  if (event.type === 'invoice.payment_failed') {
+    const invoice = event.data.object as Stripe.Invoice
+    const raw = invoice.parent?.subscription_details?.subscription
+    const subscriptionId = typeof raw === 'string' ? raw : raw?.id
+
+    if (subscriptionId) {
+      await supabase
+        .from('user_subscriptions')
+        .update({
+          status: 'past_due',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('stripe_subscription_id', subscriptionId)
+    }
   }
 
   return NextResponse.json({ received: true })

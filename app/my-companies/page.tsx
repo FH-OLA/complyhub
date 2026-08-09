@@ -127,22 +127,19 @@ export default async function MyCompaniesPage() {
               </p>
               <ManageSubscriptionButton />
             </>
-          ) : (
+          ) : hasReachedFreeLimit ? (
             <>
               <p className="text-xs font-medium text-red-600">
-                You’ve reached your free limit. Upgrade to continue tracking companies.
+                You&apos;ve reached your free limit. Upgrade to continue tracking companies.
               </p>
-
-              {hasReachedFreeLimit && (
-                <a
-                  href="/upgrade"
-                  className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
-                >
-                  Upgrade now →
-                </a>
-              )}
+              <a
+                href="/upgrade"
+                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+              >
+                Upgrade now &rarr;
+              </a>
             </>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -183,13 +180,23 @@ export default async function MyCompaniesPage() {
             </div>
           </div>
 
-          {/* 🔥 PRO PREVIEW CARD */}
+          {/* UPGRADE CTA */}
           {!isProUser && (
-            <div className="mb-6 rounded-xl border border-dashed p-6 text-center">
-              <p className="text-sm text-gray-500">
-                + Track another company{' '}
-                <span className="font-semibold text-indigo-600">(Pro only)</span>
-              </p>
+            <div className="mb-6 rounded-xl border-2 border-indigo-100 bg-indigo-50 p-6">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="font-semibold text-indigo-900">Track unlimited companies with Pro</p>
+                  <p className="mt-1 text-sm text-indigo-700">
+                    Get priority alerts, early deadline warnings, and full compliance coverage.
+                  </p>
+                </div>
+                <a
+                  href="/upgrade"
+                  className="shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700"
+                >
+                  Upgrade to Pro
+                </a>
+              </div>
             </div>
           )}
 

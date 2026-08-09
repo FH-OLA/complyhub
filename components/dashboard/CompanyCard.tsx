@@ -15,6 +15,13 @@ function getStatusColor(status: string) {
   return 'text-green-600'
 }
 
+function formatDate(isoString: string): string {
+  if (!isoString || isoString === 'N/A') return ''
+  const d = new Date(isoString)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export default function CompanyCard({ company }: Props) {
   const [loading, setLoading] = useState(false)
   const [tracked, setTracked] = useState(false)
@@ -37,8 +44,13 @@ export default function CompanyCard({ company }: Props) {
     <div className="mt-6 max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
       <h2 className="text-2xl font-bold text-gray-900">{company.company_name}</h2>
 
+      <p className="mt-1 text-sm text-gray-500">
+        {company.company_number}
+        {company.company_type ? ` · ${company.company_type.replace(/-/g, ' ')}` : ''}
+      </p>
+
       <p
-        className={`mt-1 font-semibold ${
+        className={`mt-2 font-semibold ${
           company.company_status === 'active' ? 'text-green-600' : 'text-red-600'
         }`}
       >
@@ -67,24 +79,34 @@ export default function CompanyCard({ company }: Props) {
           <div className="space-y-3">
             <div className="flex justify-between rounded-xl bg-gray-50 p-4">
               <span className="text-sm text-gray-700">Confirmation Statement</span>
-              <span
-                className={`text-sm font-semibold ${getStatusColor(
-                  company.compliance.confirmationStatement.status
-                )}`}
-              >
-                {formatDays(company.compliance.confirmationStatement.daysRemaining)}
-              </span>
+              <div className="text-right">
+                <span
+                  className={`text-sm font-semibold ${getStatusColor(
+                    company.compliance.confirmationStatement.status
+                  )}`}
+                >
+                  {formatDays(company.compliance.confirmationStatement.daysRemaining)}
+                </span>
+                <span className="block text-xs text-gray-400">
+                  {formatDate(company.compliance.confirmationStatement.dueDate)}
+                </span>
+              </div>
             </div>
 
             <div className="flex justify-between rounded-xl bg-gray-50 p-4">
               <span className="text-sm text-gray-700">Accounts Filing</span>
-              <span
-                className={`text-sm font-semibold ${getStatusColor(
-                  company.compliance.accounts.status
-                )}`}
-              >
-                {formatDays(company.compliance.accounts.daysRemaining)}
-              </span>
+              <div className="text-right">
+                <span
+                  className={`text-sm font-semibold ${getStatusColor(
+                    company.compliance.accounts.status
+                  )}`}
+                >
+                  {formatDays(company.compliance.accounts.daysRemaining)}
+                </span>
+                <span className="block text-xs text-gray-400">
+                  {formatDate(company.compliance.accounts.dueDate)}
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -92,7 +114,13 @@ export default function CompanyCard({ company }: Props) {
 
       {message && (
         <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
-          {message}
+          <p>{message}</p>
+          <a
+            href="/my-companies"
+            className="mt-1 inline-block font-semibold text-green-800 hover:underline"
+          >
+            View in My Companies &rarr;
+          </a>
         </div>
       )}
 

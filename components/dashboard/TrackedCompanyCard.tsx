@@ -49,6 +49,13 @@ function CompliancePill({
   )
 }
 
+function formatDate(isoString: string): string {
+  if (!isoString || isoString === 'N/A') return ''
+  const d = new Date(isoString)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export default function TrackedCompanyCard({ trackedId, company, compliance, isProUser }: Props) {
     const [removing, setRemoving] = useState(false)
   return (
@@ -82,10 +89,15 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
   No action
 </span>
           ) : (
-            <CompliancePill
-              status={compliance.confirmationStatement.status}
-              daysRemaining={compliance.confirmationStatement.daysRemaining}
-            />
+            <div className="flex flex-col items-end gap-0.5">
+              <CompliancePill
+                status={compliance.confirmationStatement.status}
+                daysRemaining={compliance.confirmationStatement.daysRemaining}
+              />
+              <span className="text-xs text-gray-400">
+                {formatDate(compliance.confirmationStatement.dueDate)}
+              </span>
+            </div>
           )}
         </div>
 
@@ -96,10 +108,15 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
               N/A
             </span>
           ) : (
-            <CompliancePill
-              status={compliance.accounts.status}
-              daysRemaining={compliance.accounts.daysRemaining}
-            />
+            <div className="flex flex-col items-end gap-0.5">
+              <CompliancePill
+                status={compliance.accounts.status}
+                daysRemaining={compliance.accounts.daysRemaining}
+              />
+              <span className="text-xs text-gray-400">
+                {formatDate(compliance.accounts.dueDate)}
+              </span>
+            </div>
           )}
         </div>
             </div>

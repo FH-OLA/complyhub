@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/dashboard/Navbar'
 
@@ -7,7 +8,11 @@ export default async function MyCompaniesLayout({ children }: { children: React.
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/auth/login')
+    // proxy.ts injects x-pathname on every request so we can send the user
+    // back to where they were trying to go after a successful login.
+    const headerStore = await headers()
+    const pathname = headerStore.get('x-pathname') ?? '/my-companies'
+    redirect(`/auth/login?next=${encodeURIComponent(pathname)}`)
   }
 
   return (

@@ -5,6 +5,7 @@ import TrackedCompanyCard from '@/components/dashboard/TrackedCompanyCard'
 import ManageSubscriptionButton from '@/components/dashboard/ManageSubscriptionButton'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
+import { calculateHealthScore, getHealthTier } from '@/lib/health-score'
 
 interface TrackedCompany {
   id: string
@@ -52,32 +53,29 @@ export default async function MyCompaniesPage() {
     .eq('user_id', user!.id)
     .order('created_at', { ascending: false })
 
-  const results: CompanyResult[] =
+  const rawResults: CompanyResult[] =
     companies && companies.length > 0
       ? await Promise.all((companies as TrackedCompany[]).map(fetchCompanyResult))
       : []
 
+  // Sort by urgency: lowest health score first (most urgent at top)
+  const results = [...rawResults].sort((a, b) => {
+    const scoreA = a.compliance ? calculateHealthScore(a.compliance) : 0
+    const scoreB = b.compliance ? calculateHealthScore(b.compliance) : 0
+    return scoreA - scoreB
+  })
+
   const total = results.length
 
-  const dueSoon = results.filter(({ compliance, error }) => {
-    if (error || !compliance) return false
-
-    return (
-      (compliance.confirmationStatement.daysRemaining >= 0 &&
-        compliance.confirmationStatement.daysRemaining <= 14) ||
-      (compliance.accounts.daysRemaining >= 0 &&
-        compliance.accounts.daysRemaining <= 14)
-    )
-  }).length
-
-  const overdue = results.filter(({ compliance, error }) => {
-    if (error || !compliance) return false
-
-    return (
-      compliance.confirmationStatement.daysRemaining < 0 ||
-      compliance.accounts.daysRemaining < 0
-    )
-  }).length
+  const healthCounts = results.reduce(
+    (acc, { compliance, error }) => {
+      if (error || !compliance) return acc
+      const tier = getHealthTier(calculateHealthScore(compliance))
+      acc[tier] += 1
+      return acc
+    },
+    { healthy: 0, attention: 0, action: 0 },
+  )
 
   const hasReachedFreeLimit = !isProUser && total >= 1
 
@@ -164,19 +162,19 @@ export default async function MyCompaniesPage() {
         <>
           {/* STATS */}
           <div className="mb-8 grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl border p-5">
-              <p className="text-xs text-gray-500">Total</p>
-              <p className="text-2xl font-bold">{total}</p>
+            <div className="rounded-xl border p-5 bg-green-50">
+              <p className="text-xs text-green-700">Healthy</p>
+              <p className="text-2xl font-bold text-green-800">{healthCounts.healthy}</p>
             </div>
 
             <div className="rounded-xl border p-5 bg-amber-50">
-              <p className="text-xs text-amber-700">Due Soon</p>
-              <p className="text-2xl font-bold">{dueSoon}</p>
+              <p className="text-xs text-amber-700">Attention needed</p>
+              <p className="text-2xl font-bold text-amber-800">{healthCounts.attention}</p>
             </div>
 
             <div className="rounded-xl border p-5 bg-red-50">
-              <p className="text-xs text-red-700">Overdue</p>
-              <p className="text-2xl font-bold">{overdue}</p>
+              <p className="text-xs text-red-700">Action required</p>
+              <p className="text-2xl font-bold text-red-800">{healthCounts.action}</p>
             </div>
           </div>
 

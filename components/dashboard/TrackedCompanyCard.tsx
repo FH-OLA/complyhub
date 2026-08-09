@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
+import { calculateHealthScore, getHealthTier, HEALTH_TIER_CONFIG } from '@/lib/health-score'
 
 interface Props {
   trackedId: string
@@ -62,6 +63,10 @@ export default function TrackedCompanyCard({ trackedId, company, compliance }: P
   const [confirmingRemove, setConfirmingRemove] = useState(false)
   const [removeError, setRemoveError] = useState('')
 
+  const score = calculateHealthScore(compliance)
+  const tier = getHealthTier(score)
+  const tierConfig = HEALTH_TIER_CONFIG[tier]
+
   const handleRemove = async () => {
     setRemoving(true)
     setRemoveError('')
@@ -86,7 +91,12 @@ export default function TrackedCompanyCard({ trackedId, company, compliance }: P
           <h2 className="text-lg font-semibold text-gray-900">{company.company_name}</h2>
           <p className="mt-1 text-sm text-gray-500">#{company.company_number}</p>
         </div>
-        <CompanyStatusBadge status={company.company_status} />
+        <div className="flex items-center gap-2">
+          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tierConfig.badge}`}>
+            {tierConfig.label}
+          </span>
+          <CompanyStatusBadge status={company.company_status} />
+        </div>
       </div>
 
       {company.company_status === 'active' && compliance.accounts.status === 'due_soon' && (

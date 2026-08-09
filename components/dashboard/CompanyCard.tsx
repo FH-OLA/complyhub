@@ -28,6 +28,7 @@ export default function CompanyCard({ company }: Props) {
   const [checkingTracked, setCheckingTracked] = useState(true)
   const [message, setMessage] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
 
   useEffect(() => {
     setCheckingTracked(true)
@@ -130,12 +131,28 @@ export default function CompanyCard({ company }: Props) {
         </div>
       )}
 
+      {showUpgradePrompt && (
+        <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+          <p className="text-sm font-semibold text-indigo-900">Free plan limit reached</p>
+          <p className="mt-1 text-sm text-indigo-700">
+            You can track 1 company on the free plan. Upgrade to Pro to track unlimited companies.
+          </p>
+          <a
+            href="/upgrade"
+            className="mt-3 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            Upgrade to Pro
+          </a>
+        </div>
+      )}
+
       <button
         disabled={loading || tracked || checkingTracked}
         onClick={async () => {
           setLoading(true)
           setMessage(null)
           setErrorMsg(null)
+          setShowUpgradePrompt(false)
 
           try {
             const res = await fetch('/api/track', {
@@ -151,7 +168,7 @@ export default function CompanyCard({ company }: Props) {
 
             if (!res.ok) {
               if (res.status === 403) {
-                window.location.href = '/upgrade'
+                setShowUpgradePrompt(true)
                 return
               }
 

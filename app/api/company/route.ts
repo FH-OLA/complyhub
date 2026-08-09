@@ -37,5 +37,5 @@ return NextResponse.json({
     }
 
 console.error(err)
-return NextResponse.json({ error: String(err) }, { status: 500 })  }
+return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })  }
 }

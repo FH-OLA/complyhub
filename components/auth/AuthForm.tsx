@@ -41,6 +41,7 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
   const [resending, setResending] = useState(false)
   const [resentMessage, setResentMessage] = useState('')
+  const [tosChecked, setTosChecked] = useState(false)
 
   const isLogin = mode === 'login'
   const redirectTo = safeRedirect(next)
@@ -173,7 +174,36 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
               )}
 
-              <Button type="submit" loading={loading} className="w-full mt-2">
+              {/* Terms and Privacy acceptance — required for signup only */}
+              {!isLogin && (
+                <div className="flex items-start gap-2">
+                  <input
+                    id="tos"
+                    type="checkbox"
+                    checked={tosChecked}
+                    onChange={(e) => setTosChecked(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="tos" className="text-sm text-gray-600">
+                    I agree to the{' '}
+                    <Link href="/terms" className="font-medium text-indigo-600 hover:text-indigo-500">
+                      Terms of Service
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/privacy" className="font-medium text-indigo-600 hover:text-indigo-500">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </label>
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                loading={loading}
+                disabled={!isLogin && !tosChecked}
+                className="w-full mt-2"
+              >
                 {isLogin ? 'Sign in' : 'Create account'}
               </Button>
             </form>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
-import { calculateHealthScore, getHealthTier, HEALTH_TIER_CONFIG } from '@/lib/health-score'
+import { getCompanyHealthTier, HEALTH_TIER_CONFIG } from '@/lib/health-score'
 
 interface Props {
   trackedId: string
@@ -63,8 +63,7 @@ export default function TrackedCompanyCard({ trackedId, company, compliance }: P
   const [confirmingRemove, setConfirmingRemove] = useState(false)
   const [removeError, setRemoveError] = useState('')
 
-  const score = calculateHealthScore(compliance)
-  const tier = getHealthTier(score)
+  const tier = getCompanyHealthTier(company.company_status, compliance)
   const tierConfig = HEALTH_TIER_CONFIG[tier]
 
   const handleRemove = async () => {

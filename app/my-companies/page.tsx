@@ -58,18 +58,24 @@ export default async function MyCompaniesPage() {
       ? await Promise.all((companies as TrackedCompany[]).map(fetchCompanyResult))
       : []
 
-  // Sort by urgency: lowest health score first (most urgent at top)
+  // Sort by urgency: lowest health score first (most urgent at top).
+  // Dissolved companies (no obligations) sort to the bottom; errors sort first.
   const results = [...rawResults].sort((a, b) => {
-    const scoreA = a.compliance ? calculateHealthScore(a.compliance) : 0
-    const scoreB = b.compliance ? calculateHealthScore(b.compliance) : 0
-    return scoreA - scoreB
+    const sortScore = (r: CompanyResult) => {
+      if (r.error || !r.compliance) return -1 // fetch errors float to top
+      if (r.liveData?.company_status === 'dissolved') return 101 // dissolved sink to bottom
+      return calculateHealthScore(r.compliance)
+    }
+    return sortScore(a) - sortScore(b)
   })
 
   const total = results.length
 
   const healthCounts = results.reduce(
-    (acc, { compliance, error }) => {
-      if (error || !compliance) return acc
+    (acc, { liveData, compliance, error }) => {
+      if (error || !compliance || !liveData) return acc
+      // Dissolved companies have no compliance obligations — exclude from counts.
+      if (liveData.company_status === 'dissolved') return acc
       const tier = getHealthTier(calculateHealthScore(compliance))
       acc[tier] += 1
       return acc

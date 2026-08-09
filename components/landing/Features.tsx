@@ -4,24 +4,28 @@ const features = [
     title: 'Compliance Score',
     description:
       'Instantly see how compliant your business is with a clear score based on your filings, policies, and obligations.',
+    comingSoon: false,
   },
   {
     icon: '🔔',
-    title: 'Smart Alerts',
+    title: 'Daily Email Alerts',
     description:
-      'Get notified about upcoming filing deadlines, overdue obligations, and compliance risks before they become problems.',
+      'Get notified every morning about upcoming filing deadlines, overdue obligations, and compliance risks before they become problems.',
+    comingSoon: false,
   },
   {
     icon: '🏢',
     title: 'Company Lookup',
     description:
       'Connect your UK company in seconds using your Companies House number. We pull your data automatically.',
+    comingSoon: false,
   },
   {
     icon: '📄',
     title: 'AI Policy Generator',
     description:
       'Generate tailored compliance policies — GDPR, health & safety, employment — in minutes using AI.',
+    comingSoon: true,
   },
 ]
 
@@ -41,7 +45,14 @@ export default function Features() {
           {features.map((feature) => (
             <div key={feature.title} className="flex flex-col gap-3">
               <span className="text-4xl">{feature.icon}</span>
-              <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900">{feature.title}</h3>
+                {feature.comingSoon && (
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
+                    Coming soon
+                  </span>
+                )}
+              </div>
               <p className="text-sm leading-6 text-gray-600">{feature.description}</p>
             </div>
           ))}

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 
@@ -11,6 +11,7 @@ interface NavbarProps {
 
 export default function Navbar({ userEmail }: NavbarProps) {
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -29,10 +30,16 @@ export default function Navbar({ userEmail }: NavbarProps) {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-indigo-600">
+          <Link
+            href="/dashboard"
+            className={`text-sm font-medium ${pathname === '/dashboard' ? 'text-indigo-600 font-semibold' : 'text-gray-600 hover:text-indigo-600'}`}
+          >
             Dashboard
           </Link>
-          <Link href="/my-companies" className="text-sm font-medium text-gray-600 hover:text-indigo-600">
+          <Link
+            href="/my-companies"
+            className={`text-sm font-medium ${pathname === '/my-companies' ? 'text-indigo-600 font-semibold' : 'text-gray-600 hover:text-indigo-600'}`}
+          >
             My Companies
           </Link>
           <span className="text-sm text-gray-600">{userEmail}</span>

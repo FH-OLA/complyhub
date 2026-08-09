@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { fetchCompany } from '@/lib/companies-house/client'
 import { calculateCompliance } from '@/lib/compliance'
 import TrackedCompanyCard from '@/components/dashboard/TrackedCompanyCard'
+import ManageSubscriptionButton from '@/components/dashboard/ManageSubscriptionButton'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
 
@@ -120,9 +121,12 @@ export default async function MyCompaniesPage() {
           )}
 
           {isProUser ? (
-            <p className="text-xs text-indigo-600 font-medium">
-              Pro active — unlimited tracking enabled.
-            </p>
+            <>
+              <p className="text-xs text-indigo-600 font-medium">
+                Pro active — unlimited tracking enabled.
+              </p>
+              <ManageSubscriptionButton />
+            </>
           ) : (
             <>
               <p className="text-xs font-medium text-red-600">

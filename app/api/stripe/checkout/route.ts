@@ -25,6 +25,16 @@ export async function POST() {
       return NextResponse.json({ error: 'NEXT_PUBLIC_BASE_URL is missing' }, { status: 500 })
     }
 
+    const { data: existingSub } = await supabase
+      .from('user_subscriptions')
+      .select('plan, status')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (existingSub?.plan === 'pro' && existingSub?.status === 'active') {
+      return NextResponse.json({ error: 'Already subscribed to Pro' }, { status: 409 })
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       customer_email: user.email,

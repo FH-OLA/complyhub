@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { PLANS } from '@/lib/plans'
 
 export default function UpgradePage() {
   const [loading, setLoading] = useState(false)
@@ -40,33 +41,32 @@ export default function UpgradePage() {
             Never miss a compliance deadline again.
           </h1>
 
-          <p className="mt-4 text-base text-gray-600">
-            Track multiple companies, get early alerts, and avoid costly penalties — all in one
-            place.
-          </p>
+          <p className="mt-4 text-base text-gray-600">{PLANS.pro.description}</p>
 
           <ul className="mt-8 space-y-3 text-sm text-gray-700">
-            <li>
-              ✔ Track unlimited companies
-              <span className="ml-2 rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">
-                PRO
-              </span>
-            </li>
-            <li>✔ Priority compliance alerts</li>
-            <li>✔ Early deadline warnings</li>
-            <li>✔ Future premium features</li>
+            {PLANS.pro.features.map((feature, i) => (
+              <li key={feature}>
+                &#10003; {feature}
+                {i === 0 && (
+                  <span className="ml-2 rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">
+                    PRO
+                  </span>
+                )}
+              </li>
+            ))}
           </ul>
 
           <div className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
-            ⚠️ Missing a Companies House deadline can result in penalties and company strike-off.
+            Missing a Companies House deadline can result in penalties and company strike-off.
           </div>
         </div>
 
         <div className="rounded-2xl border-2 border-indigo-600 bg-white p-8 shadow-md">
-          <h2 className="text-xl font-semibold text-gray-900">ComplyHub Pro</h2>
+          <h2 className="text-xl font-semibold text-gray-900">ComplyHub {PLANS.pro.name}</h2>
 
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            £9<span className="text-base font-medium text-gray-600">/month</span>
+            {PLANS.pro.price}
+            <span className="text-base font-medium text-gray-600">{PLANS.pro.period}</span>
           </p>
 
           <p className="mt-4 text-sm text-gray-600">Cancel anytime. No hidden fees.</p>

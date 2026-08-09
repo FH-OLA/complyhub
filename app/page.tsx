@@ -1,6 +1,7 @@
 import Hero from '@/components/landing/Hero'
 import Features from '@/components/landing/Features'
 import Link from 'next/link'
+import { PLANS } from '@/lib/plans'
 
 export default function LandingPage() {
   return (
@@ -26,44 +27,43 @@ export default function LandingPage() {
 
       {/* Pricing */}
       <section className="bg-gray-50 px-6 py-24">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">Simple, transparent pricing</h2>
           <p className="mt-4 text-lg text-gray-600">Start free. Upgrade when you need more.</p>
-          <div className="mt-12 grid gap-8 sm:grid-cols-3">
+          <div className="mt-12 grid gap-8 sm:grid-cols-2">
             {[
-              { name: 'Starter', price: '£12', period: '/month', description: 'Perfect for sole traders and freelancers.' },
-              { name: 'Business', price: '£29', period: '/month', description: 'For growing businesses with more to manage.', highlight: true },
-              { name: 'Accountant', price: '£99', period: '/month', description: 'Manage compliance across multiple clients.' },
-            ].map((plan) => (
+              { plan: PLANS.free, highlight: false },
+              { plan: PLANS.pro, highlight: true },
+            ].map(({ plan, highlight }) => (
               <div
                 key={plan.name}
                 className={`rounded-2xl border p-8 text-left ${
-                  plan.highlight
+                  highlight
                     ? 'border-indigo-600 bg-indigo-600 text-white'
                     : 'border-gray-200 bg-white'
                 }`}
               >
-                <p className={`text-sm font-semibold ${plan.highlight ? 'text-indigo-200' : 'text-indigo-600'}`}>
+                <p className={`text-sm font-semibold ${highlight ? 'text-indigo-200' : 'text-indigo-600'}`}>
                   {plan.name}
                 </p>
-                <p className={`mt-3 text-4xl font-bold ${plan.highlight ? 'text-white' : 'text-gray-900'}`}>
+                <p className={`mt-3 text-4xl font-bold ${highlight ? 'text-white' : 'text-gray-900'}`}>
                   {plan.price}
-                  <span className={`text-base font-normal ${plan.highlight ? 'text-indigo-200' : 'text-gray-500'}`}>
+                  <span className={`text-base font-normal ${highlight ? 'text-indigo-200' : 'text-gray-500'}`}>
                     {plan.period}
                   </span>
                 </p>
-                <p className={`mt-4 text-sm ${plan.highlight ? 'text-indigo-100' : 'text-gray-600'}`}>
+                <p className={`mt-4 text-sm ${highlight ? 'text-indigo-100' : 'text-gray-600'}`}>
                   {plan.description}
                 </p>
                 <Link
                   href="/auth/signup"
                   className={`mt-6 block rounded-lg px-4 py-2 text-center text-sm font-medium transition-colors ${
-                    plan.highlight
+                    highlight
                       ? 'bg-white text-indigo-600 hover:bg-indigo-50'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
                   }`}
                 >
-                  Get started
+                  Get started free
                 </Link>
               </div>
             ))}

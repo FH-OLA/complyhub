@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
+import { trackEvent } from '@/lib/events'
 
 interface CompanyLookupFormProps {
   onResult: (company: CompaniesHouseCompany | null) => void
@@ -28,6 +29,7 @@ export default function CompanyLookupForm({ onResult }: CompanyLookupFormProps) 
       onResult(null)
     } else {
       onResult(data)
+      trackEvent('company_searched')
     }
 
     setLoading(false)

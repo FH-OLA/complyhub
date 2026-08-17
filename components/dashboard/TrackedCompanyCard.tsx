@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
 import { getCompanyHealthTier, HEALTH_TIER_CONFIG } from '@/lib/health-score'
+import { trackEvent } from '@/lib/events'
 
 interface Props {
   trackedId: string
@@ -77,6 +78,7 @@ export default function TrackedCompanyCard({ trackedId, company, compliance }: P
       return
     }
     router.refresh()
+    trackEvent('company_removed')
   }
 
   const csLastFiled = formatDate(company.confirmation_statement?.last_made_up_to ?? '')

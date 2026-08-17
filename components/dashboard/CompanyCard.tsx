@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { trackEvent } from '@/lib/events'
 
 type Props = {
   company: any
@@ -169,6 +170,7 @@ export default function CompanyCard({ company }: Props) {
             if (!res.ok) {
               if (res.status === 403) {
                 setShowUpgradePrompt(true)
+                trackEvent('upgrade_clicked', { source: 'track_limit' })
                 return
               }
 
@@ -184,6 +186,7 @@ export default function CompanyCard({ company }: Props) {
 
             setTracked(true)
             setMessage('Company tracked successfully!')
+            trackEvent('company_tracked')
           } catch {
             setErrorMsg('Something went wrong. Please try again.')
           } finally {

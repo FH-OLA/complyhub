@@ -50,6 +50,16 @@ export default function Navbar({ userEmail }: NavbarProps) {
           >
             My Companies
           </Link>
+          <Link
+            href="/settings"
+            className={`rounded px-2 py-1 text-sm font-medium transition-colors ${
+              pathname === '/settings'
+                ? 'text-indigo-600'
+                : 'text-gray-600 hover:text-indigo-600'
+            }`}
+          >
+            Settings
+          </Link>
           <span className="hidden text-sm text-gray-500 sm:block">{userEmail}</span>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             Sign out

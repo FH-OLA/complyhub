@@ -4,6 +4,8 @@ export type EventType =
   | 'company_removed'
   | 'upgrade_clicked'
   | 'feedback_submitted'
+  | 'email_alerts_disabled'
+  | 'email_alerts_enabled'
 
 /**
  * Fire-and-forget usage event tracker.

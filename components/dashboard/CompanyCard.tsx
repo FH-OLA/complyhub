@@ -3,6 +3,7 @@ import { trackEvent } from '@/lib/events'
 
 type Props = {
   company: any
+  onTracked?: () => void
 }
 
 function formatDays(days: number) {
@@ -23,7 +24,7 @@ function formatDate(isoString: string): string {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export default function CompanyCard({ company }: Props) {
+export default function CompanyCard({ company, onTracked }: Props) {
   const [loading, setLoading] = useState(false)
   const [tracked, setTracked] = useState(false)
   const [checkingTracked, setCheckingTracked] = useState(true)
@@ -187,6 +188,7 @@ export default function CompanyCard({ company }: Props) {
             setTracked(true)
             setMessage('Company tracked successfully!')
             trackEvent('company_tracked')
+            onTracked?.()
           } catch {
             setErrorMsg('Something went wrong. Please try again.')
           } finally {

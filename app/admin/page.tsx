@@ -71,6 +71,8 @@ export default async function AdminPage() {
     { data: recentFeedback },
     { count: feedbackTotal },
     { data: recentEvents },
+    { data: allEventTypes },
+    { data: allRatingsData },
   ] = await Promise.all([
     supabase.auth.admin.listUsers({ perPage: 1000 }),
     supabase.from('user_subscriptions').select('user_id, plan, status'),
@@ -87,6 +89,8 @@ export default async function AdminPage() {
       .select('id, user_id, event_type, created_at')
       .order('created_at', { ascending: false })
       .limit(30),
+    supabase.from('usage_events').select('event_type'),
+    supabase.from('beta_feedback').select('rating').not('rating', 'is', null),
   ])
 
   const users = usersResult.data?.users ?? []
@@ -128,6 +132,40 @@ export default async function AdminPage() {
   const conversion =
     users.length > 0 ? Math.round((proUsers.length / users.length) * 100) : 0
 
+  // User growth (derived from existing users list)
+  const now = Date.now()
+  const MS_WEEK = 7 * 24 * 60 * 60 * 1000
+  const MS_MONTH = 30 * 24 * 60 * 60 * 1000
+  const newUsersThisWeek = users.filter(
+    (u) => now - new Date(u.created_at).getTime() < MS_WEEK,
+  ).length
+  const newUsersThisMonth = users.filter(
+    (u) => now - new Date(u.created_at).getTime() < MS_MONTH,
+  ).length
+
+  // Companies per user
+  const usersWithCompanies = Object.keys(companyCountByUser).length
+  const avgCompaniesPerUser =
+    usersWithCompanies > 0
+      ? ((companiesTotal ?? 0) / usersWithCompanies).toFixed(1)
+      : '0'
+
+  // Usage event breakdown
+  const eventBreakdown: Record<string, number> = {}
+  allEventTypes?.forEach((row: { event_type: string }) => {
+    eventBreakdown[row.event_type] = (eventBreakdown[row.event_type] ?? 0) + 1
+  })
+  const totalEvents = Object.values(eventBreakdown).reduce((a, b) => a + b, 0)
+
+  // Average feedback rating
+  const ratings = (allRatingsData ?? [])
+    .map((r: { rating: number | null }) => r.rating)
+    .filter((r): r is number => r !== null)
+  const avgRating =
+    ratings.length > 0
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      : null
+
   return (
     <div>
       {/* Page header */}
@@ -149,6 +187,92 @@ export default async function AdminPage() {
         <StatCard label="Companies Tracked" value={companiesTotal ?? 0} />
         <StatCard label="Feedback Submissions" value={feedbackTotal ?? 0} />
       </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* GROWTH & PRODUCT ANALYTICS                                           */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Growth</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="New users (7 days)"
+            value={newUsersThisWeek}
+          />
+          <StatCard
+            label="New users (30 days)"
+            value={newUsersThisMonth}
+          />
+          <StatCard
+            label="Avg companies / user"
+            value={avgCompaniesPerUser}
+            sub={`${usersWithCompanies} users with at least 1`}
+          />
+          <StatCard
+            label="Avg feedback rating"
+            value={avgRating !== null ? `${avgRating} / 5` : '—'}
+            sub={`${ratings.length} rated submission${ratings.length !== 1 ? 's' : ''}`}
+          />
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* EVENT BREAKDOWN                                                      */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">
+          Usage Event Breakdown
+          {totalEvents > 0 && (
+            <span className="ml-2 text-sm font-normal text-gray-400">
+              {totalEvents} total
+            </span>
+          )}
+        </h2>
+
+        {totalEvents === 0 ? (
+          <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-500">
+            No events recorded yet.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <th className="px-4 py-3 text-left">Event type</th>
+                  <th className="px-4 py-3 text-left">Count</th>
+                  <th className="px-4 py-3 text-left">Share</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {Object.entries(eventBreakdown)
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([type, count]) => (
+                    <tr key={type} className="hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        <span className="rounded bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                          {formatEventLabel(type)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-900">{count}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-100">
+                            <div
+                              className="h-1.5 rounded-full bg-indigo-400"
+                              style={{ width: `${Math.round((count / totalEvents) * 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-500">
+                            {Math.round((count / totalEvents) * 100)}%
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* ------------------------------------------------------------------ */}
       {/* BETA TESTERS                                                         */}

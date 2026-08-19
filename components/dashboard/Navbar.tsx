@@ -29,20 +29,28 @@ export default function Navbar({ userEmail }: NavbarProps) {
             Beta
           </span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-4">
           <Link
             href="/dashboard"
-            className={`text-sm font-medium ${pathname === '/dashboard' ? 'text-indigo-600 font-semibold' : 'text-gray-600 hover:text-indigo-600'}`}
+            className={`rounded px-2 py-1 text-sm font-medium transition-colors ${
+              pathname === '/dashboard'
+                ? 'text-indigo-600'
+                : 'text-gray-600 hover:text-indigo-600'
+            }`}
           >
             Dashboard
           </Link>
           <Link
             href="/my-companies"
-            className={`text-sm font-medium ${pathname === '/my-companies' ? 'text-indigo-600 font-semibold' : 'text-gray-600 hover:text-indigo-600'}`}
+            className={`rounded px-2 py-1 text-sm font-medium transition-colors ${
+              pathname === '/my-companies'
+                ? 'text-indigo-600'
+                : 'text-gray-600 hover:text-indigo-600'
+            }`}
           >
             My Companies
           </Link>
-          <span className="text-sm text-gray-600">{userEmail}</span>
+          <span className="hidden text-sm text-gray-500 sm:block">{userEmail}</span>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             Sign out
           </Button>

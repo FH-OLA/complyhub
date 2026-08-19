@@ -3,6 +3,7 @@ import { fetchCompany } from '@/lib/companies-house/client'
 import { calculateCompliance } from '@/lib/compliance'
 import TrackedCompanyCard from '@/components/dashboard/TrackedCompanyCard'
 import ManageSubscriptionButton from '@/components/dashboard/ManageSubscriptionButton'
+import EmptyState from '@/components/ui/EmptyState'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
 import { calculateHealthScore, getHealthTier } from '@/lib/health-score'
@@ -158,9 +159,12 @@ export default async function MyCompaniesPage() {
 
       {/* EMPTY STATE */}
       {!dbError && results.length === 0 && (
-        <div className="rounded-xl border p-10 text-center">
-          <p className="text-sm text-gray-600">No companies tracked yet.</p>
-        </div>
+        <EmptyState
+          icon="🏢"
+          heading="No companies tracked yet"
+          body="Search for a UK company number to view its compliance status, then track it to monitor upcoming filing deadlines."
+          action={{ label: 'Track your first company', href: '/dashboard' }}
+        />
       )}
 
       {/* CONTENT */}
@@ -168,19 +172,22 @@ export default async function MyCompaniesPage() {
         <>
           {/* STATS */}
           <div className="mb-8 grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl border p-5 bg-green-50">
-              <p className="text-xs text-green-700">Healthy</p>
-              <p className="text-2xl font-bold text-green-800">{healthCounts.healthy}</p>
+            <div className="rounded-xl border border-green-100 bg-green-50 p-5 ring-1 ring-green-100">
+              <p className="text-xs font-medium uppercase tracking-wide text-green-700">Healthy</p>
+              <p className="mt-1 text-3xl font-bold text-green-800">{healthCounts.healthy}</p>
+              <p className="mt-1 text-xs text-green-600">All deadlines on track</p>
             </div>
 
-            <div className="rounded-xl border p-5 bg-amber-50">
-              <p className="text-xs text-amber-700">Attention needed</p>
-              <p className="text-2xl font-bold text-amber-800">{healthCounts.attention}</p>
+            <div className="rounded-xl border border-amber-100 bg-amber-50 p-5 ring-1 ring-amber-100">
+              <p className="text-xs font-medium uppercase tracking-wide text-amber-700">Attention needed</p>
+              <p className="mt-1 text-3xl font-bold text-amber-800">{healthCounts.attention}</p>
+              <p className="mt-1 text-xs text-amber-600">Deadlines approaching</p>
             </div>
 
-            <div className="rounded-xl border p-5 bg-red-50">
-              <p className="text-xs text-red-700">Action required</p>
-              <p className="text-2xl font-bold text-red-800">{healthCounts.action}</p>
+            <div className="rounded-xl border border-red-100 bg-red-50 p-5 ring-1 ring-red-100">
+              <p className="text-xs font-medium uppercase tracking-wide text-red-700">Action required</p>
+              <p className="mt-1 text-3xl font-bold text-red-800">{healthCounts.action}</p>
+              <p className="mt-1 text-xs text-red-600">Overdue or urgent</p>
             </div>
           </div>
 

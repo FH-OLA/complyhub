@@ -7,6 +7,9 @@ export type EventType =
   | 'email_alerts_disabled'
   | 'email_alerts_enabled'
   | 'report_downloaded'
+  | 'ai_advisor_opened'
+  | 'ai_upgrade_prompt_shown'
+  | 'ai_upgrade_clicked'
 
 /**
  * Fire-and-forget usage event tracker.

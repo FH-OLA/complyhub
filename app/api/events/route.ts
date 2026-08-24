@@ -10,6 +10,9 @@ const VALID_EVENT_TYPES = new Set([
   'email_alerts_disabled',
   'email_alerts_enabled',
   'report_downloaded',
+  'ai_advisor_opened',
+  'ai_upgrade_prompt_shown',
+  'ai_upgrade_clicked',
 ])
 
 export async function POST(request: NextRequest) {

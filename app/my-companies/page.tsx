@@ -229,6 +229,7 @@ export default async function MyCompaniesPage() {
                   trackedId={tracked.id}
                   company={liveData}
                   compliance={compliance}
+                  isProUser={isProUser}
                 />
               )
             })}

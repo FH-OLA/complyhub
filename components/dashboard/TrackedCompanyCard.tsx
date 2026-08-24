@@ -7,11 +7,14 @@ import type { ComplianceResult } from '@/lib/compliance'
 import { getCompanyHealthTier, HEALTH_TIER_CONFIG } from '@/lib/health-score'
 import { trackEvent } from '@/lib/events'
 import DownloadReportButton from '@/components/dashboard/DownloadReportButton'
+import AiAdvisor from '@/components/dashboard/AiAdvisor'
+import AiAdvisorLocked from '@/components/dashboard/AiAdvisorLocked'
 
 interface Props {
   trackedId: string
   company: CompaniesHouseCompany
   compliance: ComplianceResult
+  isProUser: boolean
 }
 
 function CompanyStatusBadge({ status }: { status: string }) {
@@ -59,7 +62,7 @@ function formatDate(isoString: string): string {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export default function TrackedCompanyCard({ trackedId, company, compliance }: Props) {
+export default function TrackedCompanyCard({ trackedId, company, compliance, isProUser }: Props) {
   const router = useRouter()
   const [removing, setRemoving] = useState(false)
   const [confirmingRemove, setConfirmingRemove] = useState(false)
@@ -163,6 +166,12 @@ export default function TrackedCompanyCard({ trackedId, company, compliance }: P
       <p className="mt-4 text-xs text-gray-400">Companies House data refreshed hourly</p>
 
       <DownloadReportButton trackedId={trackedId} />
+
+      {isProUser ? (
+        <AiAdvisor trackedId={trackedId} />
+      ) : (
+        <AiAdvisorLocked />
+      )}
 
       {confirmingRemove ? (
         <div className="mt-5 rounded-xl border border-gray-200 p-3">

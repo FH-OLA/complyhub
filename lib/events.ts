@@ -6,6 +6,7 @@ export type EventType =
   | 'feedback_submitted'
   | 'email_alerts_disabled'
   | 'email_alerts_enabled'
+  | 'report_downloaded'
 
 /**
  * Fire-and-forget usage event tracker.

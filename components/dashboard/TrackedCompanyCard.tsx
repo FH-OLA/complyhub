@@ -6,6 +6,7 @@ import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
 import { getCompanyHealthTier, HEALTH_TIER_CONFIG } from '@/lib/health-score'
 import { trackEvent } from '@/lib/events'
+import DownloadReportButton from '@/components/dashboard/DownloadReportButton'
 
 interface Props {
   trackedId: string
@@ -160,6 +161,8 @@ export default function TrackedCompanyCard({ trackedId, company, compliance }: P
       </div>
 
       <p className="mt-4 text-xs text-gray-400">Companies House data refreshed hourly</p>
+
+      <DownloadReportButton trackedId={trackedId} />
 
       {confirmingRemove ? (
         <div className="mt-5 rounded-xl border border-gray-200 p-3">

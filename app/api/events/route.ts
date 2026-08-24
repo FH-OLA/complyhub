@@ -9,6 +9,7 @@ const VALID_EVENT_TYPES = new Set([
   'feedback_submitted',
   'email_alerts_disabled',
   'email_alerts_enabled',
+  'report_downloaded',
 ])
 
 export async function POST(request: NextRequest) {

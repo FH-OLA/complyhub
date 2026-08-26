@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { trackEvent } from '@/lib/events'
+import type { CompanyWithCompliance } from '@/lib/compliance'
 
 type Props = {
-  company: any
+  company: CompanyWithCompliance
   onTracked?: () => void
 }
 

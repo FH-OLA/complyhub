@@ -1,3 +1,5 @@
+import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
+
 export interface ComplianceResult {
   confirmationStatement: {
     dueDate: string
@@ -10,6 +12,11 @@ export interface ComplianceResult {
     daysRemaining: number
   }
 }
+
+// Merged type returned by /api/company — CompaniesHouseCompany enriched with
+// the computed compliance result. Used by CompanyCard, CompanyLookupForm, and
+// the dashboard page.
+export type CompanyWithCompliance = CompaniesHouseCompany & { compliance: ComplianceResult }
 
 // ✅ Helper functions (THIS was missing)
 function getStatus(days: number): 'ok' | 'due_soon' | 'overdue' {
@@ -25,7 +32,7 @@ function diffInDays(date: Date): number {
 }
 
 // ✅ Main function
-export function calculateCompliance(data: any): ComplianceResult {
+export function calculateCompliance(data: CompaniesHouseCompany): ComplianceResult {
   // 🚨 Handle dissolved companies
   if (data.company_status === 'dissolved') {
     return {

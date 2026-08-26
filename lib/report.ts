@@ -53,11 +53,12 @@ export interface ReportData {
 
 function generateReportId(): string {
   const yyyymmdd = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-  const random = Array.from(
-    { length: 6 },
-    () => chars[Math.floor(Math.random() * chars.length)],
-  ).join('')
+  // Use Web Crypto CSPRNG (available in both Node.js and Edge runtimes).
+  // 3 random bytes → 6 uppercase hex characters (24 bits of entropy).
+  const bytes = crypto.getRandomValues(new Uint8Array(3))
+  const random = Array.from(bytes, (b) => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()
   return `CHR-${yyyymmdd}-${random}`
 }
 

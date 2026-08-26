@@ -4,10 +4,10 @@ import { useState } from 'react'
 import CompanyLookupForm from '@/components/dashboard/CompanyLookupForm'
 import CompanyCard from '@/components/dashboard/CompanyCard'
 import OnboardingCard from '@/components/onboarding/OnboardingCard'
-import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
+import type { CompanyWithCompliance } from '@/lib/compliance'
 
 export default function DashboardPage() {
-  const [company, setCompany] = useState<CompaniesHouseCompany | null>(null)
+  const [company, setCompany] = useState<CompanyWithCompliance | null>(null)
   const [companyTracked, setCompanyTracked] = useState(false)
 
   return (

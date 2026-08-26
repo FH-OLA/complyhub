@@ -48,53 +48,32 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { data: subscription } = await supabase
-    .from('user_subscriptions')
-    .select('plan, status')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Delegate the limit check + insert to an atomic Postgres function that
+  // uses a per-user advisory lock, eliminating the race condition that existed
+  // when count and insert were performed as two separate queries.
+  const { data: result, error: rpcError } = await supabase.rpc('track_company', {
+    p_company_number: company_number,
+    p_company_name: company_name,
+  })
 
-  const isProUser = subscription?.plan === 'pro' && subscription?.status === 'active'
-
-  const { count, error: countError } = await supabase
-    .from('tracked_companies')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-
-  if (countError) {
-    console.error(countError)
-    return NextResponse.json(
-      { error: 'Could not verify tracking limit' },
-      { status: 500 }
-    )
+  if (rpcError) {
+    console.error(rpcError)
+    return NextResponse.json({ error: 'Failed to track company' }, { status: 500 })
   }
 
-  if (!isProUser && (count || 0) >= 1) {
+  const outcome = result as { error?: string; success?: boolean }
+
+  if (outcome.error === 'limit_reached') {
     return NextResponse.json(
       { error: 'Free plan limit reached. Upgrade to track more companies.' },
       { status: 403 }
     )
   }
 
-  const { error } = await supabase.from('tracked_companies').insert({
-    user_id: user.id,
-    company_number,
-    company_name,
-  })
-
-  if (error) {
-    console.error(error)
-
-    if (error.code === '23505') {
-      return NextResponse.json(
-        { error: 'You are already tracking this company' },
-        { status: 400 }
-      )
-    }
-
+  if (outcome.error === 'already_tracked') {
     return NextResponse.json(
-      { error: 'Failed to track company' },
-      { status: 500 }
+      { error: 'You are already tracking this company' },
+      { status: 400 }
     )
   }
 

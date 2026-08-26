@@ -133,14 +133,14 @@ export default async function AdminPage() {
     users.length > 0 ? Math.round((proUsers.length / users.length) * 100) : 0
 
   // User growth (derived from existing users list)
-  const now = Date.now()
-  const MS_WEEK = 7 * 24 * 60 * 60 * 1000
-  const MS_MONTH = 30 * 24 * 60 * 60 * 1000
-  const newUsersThisWeek = users.filter(
-    (u) => now - new Date(u.created_at).getTime() < MS_WEEK,
+  const now      = new Date()
+  const weekAgo  = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000)
+  const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const newUsersThisWeek  = users.filter(
+    (u) => new Date(u.created_at) >= weekAgo,
   ).length
   const newUsersThisMonth = users.filter(
-    (u) => now - new Date(u.created_at).getTime() < MS_MONTH,
+    (u) => new Date(u.created_at) >= monthAgo,
   ).length
 
   // Companies per user

@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
+import type { CompanyWithCompliance } from '@/lib/compliance'
 import { trackEvent } from '@/lib/events'
 
 interface CompanyLookupFormProps {
-  onResult: (company: CompaniesHouseCompany | null) => void
+  onResult: (company: CompanyWithCompliance | null) => void
 }
 
 export default function CompanyLookupForm({ onResult }: CompanyLookupFormProps) {

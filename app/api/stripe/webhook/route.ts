@@ -34,6 +34,25 @@ export async function POST(req: Request) {
 
   const supabase = createAdminClient()
 
+  // Guard against duplicate delivery. Stripe guarantees at-least-once delivery,
+  // so the same event can arrive more than once. Inserting the event ID before
+  // processing uses the PRIMARY KEY constraint as an atomic idempotency gate:
+  // the second delivery will hit a unique_violation (code 23505) and return 200
+  // without re-processing.
+  const { error: idempotencyError } = await supabase
+    .from('stripe_webhook_events')
+    .insert({ event_id: event.id })
+
+  if (idempotencyError) {
+    if (idempotencyError.code === '23505') {
+      // Already processed — acknowledge without re-processing.
+      return NextResponse.json({ received: true })
+    }
+    // Log unexpected DB errors but continue rather than causing Stripe to retry
+    // indefinitely, since the event processing below is itself idempotent.
+    console.error('Failed to record webhook event ID:', idempotencyError)
+  }
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
 

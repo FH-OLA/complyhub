@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/dashboard/Navbar'
 import FeedbackWidget from '@/components/beta/FeedbackWidget'
+import Container from '@/components/ui/Container'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -19,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar userEmail={user.email ?? ''} />
-      <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
+      <main><Container className="py-10">{children}</Container></main>
       <FeedbackWidget />
     </div>
   )

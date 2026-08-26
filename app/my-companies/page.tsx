@@ -119,7 +119,7 @@ export default async function MyCompaniesPage() {
           ) : (
             <a
               href="/dashboard"
-              className="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+              className="flex min-h-[44px] items-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700"
             >
               + Track another company
             </a>
@@ -139,7 +139,7 @@ export default async function MyCompaniesPage() {
               </p>
               <a
                 href="/upgrade"
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700"
+                className="flex min-h-[44px] items-center text-xs font-semibold text-indigo-600 hover:text-indigo-700"
               >
                 Upgrade now &rarr;
               </a>
@@ -203,7 +203,7 @@ export default async function MyCompaniesPage() {
                 </div>
                 <a
                   href="/upgrade"
-                  className="shrink-0 rounded-xl bg-indigo-600 px-5 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700"
+                  className="shrink-0 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white hover:bg-indigo-700"
                 >
                   Upgrade to Pro
                 </a>

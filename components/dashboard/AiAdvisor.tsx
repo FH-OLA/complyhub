@@ -221,15 +221,15 @@ export default function AiAdvisor({ trackedId }: Props) {
             type="button"
             onClick={() => handleSuggestion(q)}
             disabled={loading}
-            className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs text-indigo-700 transition-colors hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[44px] max-w-full rounded-full border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 transition-colors hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {q}
           </button>
         ))}
       </div>
 
-      {/* Question input */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      {/* Question input — stacks vertically on mobile, horizontal on sm+ */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={question}
@@ -242,7 +242,7 @@ export default function AiAdvisor({ trackedId }: Props) {
         <button
           type="submit"
           disabled={loading || !question.trim()}
-          className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <span className="flex items-center gap-1.5">
@@ -278,9 +278,9 @@ export default function AiAdvisor({ trackedId }: Props) {
         </p>
       )}
 
-      {/* Answer */}
+      {/* Answer — overflow-anywhere handles long URLs and unbroken AI output */}
       {answer && (
-        <div className="mt-3 rounded-xl bg-indigo-50 p-4">
+        <div className="overflow-anywhere mt-3 rounded-xl bg-indigo-50 p-4">
           <AdvisorMarkdown content={answer} />
         </div>
       )}

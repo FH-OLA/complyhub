@@ -54,7 +54,7 @@ export default function DownloadReportButton({ trackedId }: Props) {
         type="button"
         onClick={handleDownload}
         disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-indigo-200 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? (
           <>

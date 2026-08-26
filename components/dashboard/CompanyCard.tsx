@@ -45,7 +45,7 @@ export default function CompanyCard({ company, onTracked }: Props) {
 
   return (
     <div className="mt-6 max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-900">{company.company_name}</h2>
+      <h2 className="break-words text-2xl font-bold text-gray-900">{company.company_name}</h2>
 
       <p className="mt-1 text-sm text-gray-500">
         {company.company_number}
@@ -195,7 +195,7 @@ export default function CompanyCard({ company, onTracked }: Props) {
             setLoading(false)
           }
         }}
-        className={`mt-6 w-full rounded-xl py-2 text-white ${
+        className={`mt-6 w-full rounded-xl py-2 text-white min-h-[44px] ${
           tracked || loading || checkingTracked
             ? 'cursor-not-allowed bg-gray-400'
             : 'bg-black hover:bg-gray-800'

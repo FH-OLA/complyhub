@@ -93,7 +93,7 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">{company.company_name}</h2>
+          <h2 className="break-words text-lg font-semibold text-gray-900">{company.company_name}</h2>
           <p className="mt-1 text-sm text-gray-500">#{company.company_number}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -181,14 +181,14 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
             <button
               onClick={() => { setConfirmingRemove(false); setRemoveError('') }}
               disabled={removing}
-              className="flex-1 rounded-lg border border-gray-200 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+              className="flex-1 rounded-lg border border-gray-200 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 min-h-[44px]"
             >
               Cancel
             </button>
             <button
               onClick={handleRemove}
               disabled={removing}
-              className="flex-1 rounded-lg bg-red-600 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-red-600 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 min-h-[44px]"
             >
               {removing ? 'Removing...' : 'Remove'}
             </button>
@@ -197,7 +197,7 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
       ) : (
         <button
           onClick={() => setConfirmingRemove(true)}
-          className="mt-5 w-full rounded-xl border border-red-200 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          className="mt-5 w-full rounded-xl border border-red-200 py-2 text-sm font-medium text-red-600 hover:bg-red-50 min-h-[44px]"
         >
           Remove company
         </button>

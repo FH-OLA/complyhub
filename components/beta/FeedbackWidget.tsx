@@ -49,9 +49,9 @@ export default function FeedbackWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-safe-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="w-80 rounded-2xl border border-gray-200 bg-white shadow-xl">
+        <div className="w-[calc(100vw-3rem)] max-w-xs rounded-2xl border border-gray-200 bg-white shadow-xl sm:w-80">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <p className="text-sm font-semibold text-gray-900">Beta Feedback</p>
@@ -90,7 +90,7 @@ export default function FeedbackWidget() {
                     type="button"
                     onClick={() => setRating(star)}
                     aria-label={`Rate ${star} out of 5`}
-                    className={`text-2xl leading-none transition-colors ${
+                    className={`flex min-h-[44px] min-w-[44px] items-center justify-center text-2xl leading-none transition-colors ${
                       star <= rating ? 'text-amber-400' : 'text-gray-200 hover:text-amber-300'
                     }`}
                   >
@@ -125,7 +125,7 @@ export default function FeedbackWidget() {
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-indigo-700"
+        className="flex min-h-[44px] items-center rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white shadow-lg hover:bg-indigo-700"
         aria-label={open ? 'Close feedback' : 'Open feedback'}
       >
         Feedback

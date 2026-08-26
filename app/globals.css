@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ---------------------------------------------------------------------------
+ * Safe-area inset utilities for iPhone home indicator / Dynamic Island.
+ * Requires viewport-fit=cover in the <meta name="viewport"> tag (set via
+ * the Next.js `viewport` export in app/layout.tsx).
+ * max() ensures a minimum base value when no safe area is present.
+ * --------------------------------------------------------------------------- */
+
+/* Fixed element: sit 1.5rem above the home indicator (or above bottom edge) */
+.bottom-safe-6 {
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Padding that includes safe area — minimum 1rem base */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+
+/* ---------------------------------------------------------------------------
+ * Overflow-wrap utility for AI-generated content and long unbroken strings
+ * (e.g. long URLs in AI responses). More aggressive than 'break-words' —
+ * wraps at any character when necessary to prevent horizontal overflow.
+ * Applied only to specific containers, not globally.
+ * --------------------------------------------------------------------------- */
+.overflow-anywhere {
+  overflow-wrap: anywhere;
+}

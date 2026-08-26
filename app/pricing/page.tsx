@@ -3,7 +3,7 @@ import { PLANS } from '@/lib/plans'
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-16 text-center">
+    <div className="mx-auto max-w-5xl px-4 py-10 text-center sm:py-16">
       <h1 className="text-4xl font-bold text-gray-900">Simple, transparent pricing</h1>
       <p className="mt-4 text-gray-600">Start free. Upgrade when you need more.</p>
 
@@ -43,7 +43,7 @@ export default function PricingPage() {
 
           <Link
             href="/upgrade"
-            className="mt-8 inline-block w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700"
+            className="mt-8 inline-flex min-h-[44px] w-full items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700"
           >
             Upgrade to Pro
           </Link>

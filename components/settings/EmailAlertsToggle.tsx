@@ -59,22 +59,32 @@ export default function EmailAlertsToggle({ userId, initialEnabled }: Props) {
           )}
         </div>
 
+        {/*
+          The button is the ARIA switch and interactive element. It has a
+          min-h/min-w of 44px to meet touch target requirements. The visual
+          toggle track and thumb live inside as non-interactive children.
+        */}
         <button
           type="button"
           role="switch"
           aria-checked={enabled}
           disabled={saving}
           onClick={handleToggle}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-            enabled ? 'bg-indigo-600' : 'bg-gray-200'
-          }`}
+          className="flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="sr-only">{enabled ? 'Disable email alerts' : 'Enable email alerts'}</span>
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-              enabled ? 'translate-x-5' : 'translate-x-0'
+            aria-hidden="true"
+            className={`relative inline-flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors duration-200 ${
+              enabled ? 'bg-indigo-600' : 'bg-gray-200'
             }`}
-          />
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                enabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </span>
         </button>
       </div>
 

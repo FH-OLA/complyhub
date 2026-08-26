@@ -58,7 +58,7 @@ export default function AiAdvisorLocked() {
         <a
           href="/upgrade"
           onClick={() => trackEvent('ai_upgrade_clicked')}
-          className="inline-block rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          className="inline-flex min-h-[44px] items-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
         >
           Upgrade to Pro →
         </a>

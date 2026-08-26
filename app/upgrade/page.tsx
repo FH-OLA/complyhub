@@ -30,14 +30,14 @@ export default function UpgradePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center px-4 py-16">
+    <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center px-4 py-10 sm:py-16">
       <div className="grid w-full gap-8 md:grid-cols-2">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
             Upgrade to Pro
           </p>
 
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-gray-900">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
             Never miss a compliance deadline again.
           </h1>
 

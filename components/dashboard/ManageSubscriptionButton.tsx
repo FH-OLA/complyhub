@@ -29,7 +29,7 @@ export default function ManageSubscriptionButton() {
       <button
         onClick={handleClick}
         disabled={loading}
-        className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+        className="flex min-h-[44px] items-center text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
       >
         {loading ? 'Loading...' : 'Manage subscription \u2192'}
       </button>

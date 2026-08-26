@@ -2,3 +2,6 @@ node_modules/
 .next/
 .env.local
 tsconfig.tsbuildinfo
+tests/e2e/.auth/
+coverage/
+playwright-report/

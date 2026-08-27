@@ -1,0 +1,33 @@
+-- Sprint 9.5: Composite index for AI quota lookups on usage_events
+--
+-- Both AI Advisor quota checks query usage_events with the same three-column
+-- predicate every time a Pro user asks a question:
+--
+--   WHERE user_id = ?
+--     AND event_type = ?
+--     AND created_at >= ?         (burst: last 60 s / monthly: start of month)
+--
+-- The existing single-column indexes on user_id, event_type, and created_at
+-- individually cannot satisfy this predicate as an index-only scan. Without
+-- this index, each AI Advisor request triggers two sequential scans across
+-- the full usage_events table — a cost that grows linearly with total event
+-- volume.
+--
+-- Index design:
+--   (user_id, event_type, created_at DESC)
+--   • user_id first: highest selectivity; eliminates other users' rows first.
+--   • event_type second: filters to 'ai_question_asked' rows only.
+--   • created_at DESC: matches the >= filter on a rolling time window;
+--     DESC ordering is preferred because both quota queries scan from the
+--     most recent event backwards.
+--
+-- CONCURRENTLY: builds the index without holding a full table lock, so
+-- existing read/write traffic is unaffected during migration.
+--
+-- IF NOT EXISTS: makes the migration idempotent — safe to re-run.
+--
+-- Note: CREATE INDEX CONCURRENTLY cannot run inside an explicit transaction
+-- block. Do not wrap this statement in BEGIN / COMMIT.
+
+CREATE INDEX CONCURRENTLY IF NOT EXISTS usage_events_quota_lookup_idx
+  ON public.usage_events (user_id, event_type, created_at DESC);

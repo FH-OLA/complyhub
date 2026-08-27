@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import EmailAlertsToggle from '@/components/settings/EmailAlertsToggle'
 
@@ -5,10 +6,14 @@ export default async function SettingsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  if (!user) {
+    redirect('/auth/login?next=/settings')
+  }
+
   const { data: prefs } = await supabase
     .from('email_preferences')
     .select('email_alerts_enabled')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   // Absence of a row means opted-in (default-on)
@@ -28,7 +33,7 @@ export default async function SettingsPage() {
           Email notifications
         </h2>
         <EmailAlertsToggle
-          userId={user!.id}
+          userId={user.id}
           initialEnabled={emailAlertsEnabled}
         />
       </section>
@@ -41,7 +46,7 @@ export default async function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-900">Email address</p>
-              <p className="mt-0.5 text-sm text-gray-500">{user!.email}</p>
+              <p className="mt-0.5 text-sm text-gray-500">{user.email}</p>
             </div>
           </div>
         </div>

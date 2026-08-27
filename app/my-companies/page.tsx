@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { fetchCompany } from '@/lib/companies-house/client'
 import { calculateCompliance } from '@/lib/compliance'
@@ -40,10 +41,14 @@ export default async function MyCompaniesPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  if (!user) {
+    redirect('/auth/login?next=/my-companies')
+  }
+
   const { data: subscription } = await supabase
     .from('user_subscriptions')
     .select('plan, status')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   const isProUser = subscription?.plan === 'pro' && subscription?.status === 'active'
@@ -51,8 +56,12 @@ export default async function MyCompaniesPage() {
   const { data: companies, error: dbError } = await supabase
     .from('tracked_companies')
     .select('id, company_name, company_number, created_at')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
+
+  if (dbError) {
+    console.error('[my-companies] Failed to load tracked_companies:', dbError)
+  }
 
   const rawResults: CompanyResult[] =
     companies && companies.length > 0
@@ -153,7 +162,7 @@ export default async function MyCompaniesPage() {
       {/* ERROR */}
       {dbError && (
         <div className="rounded-xl bg-red-50 p-4 text-red-700 text-sm">
-          Failed to load companies: {dbError.message}
+          Could not load your companies. Please refresh the page or try again later.
         </div>
       )}
 

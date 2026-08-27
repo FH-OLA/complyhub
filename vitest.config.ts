@@ -31,6 +31,9 @@ export default defineConfig({
         'app/api/stripe/webhook/route.ts',
         'app/api/advisor/\\[trackedId\\]/route.ts',
         'app/api/report/\\[trackedId\\]/route.ts',
+        'lib/filing-guidance/index.ts',
+        'lib/ai/filing-assistant.ts',
+        'app/api/filing-assistant/\\[trackedId\\]/route.ts',
       ],
       thresholds: {
         branches: 75,

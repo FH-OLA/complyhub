@@ -10,6 +10,7 @@ export type EventType =
   | 'ai_advisor_opened'
   | 'ai_upgrade_prompt_shown'
   | 'ai_upgrade_clicked'
+  | 'ai_filing_opened'
 
 /**
  * Fire-and-forget usage event tracker.

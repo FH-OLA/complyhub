@@ -9,6 +9,8 @@ import { trackEvent } from '@/lib/events'
 import DownloadReportButton from '@/components/dashboard/DownloadReportButton'
 import AiAdvisor from '@/components/dashboard/AiAdvisor'
 import AiAdvisorLocked from '@/components/dashboard/AiAdvisorLocked'
+import FilingAssistant from '@/components/dashboard/FilingAssistant'
+import FilingAssistantLocked from '@/components/dashboard/FilingAssistantLocked'
 
 interface Props {
   trackedId: string
@@ -171,6 +173,14 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
         <AiAdvisor trackedId={trackedId} />
       ) : (
         <AiAdvisorLocked />
+      )}
+
+      {company.company_status !== 'dissolved' && (
+        isProUser ? (
+          <FilingAssistant trackedId={trackedId} />
+        ) : (
+          <FilingAssistantLocked />
+        )
       )}
 
       {confirmingRemove ? (

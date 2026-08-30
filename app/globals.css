@@ -1,53 +1,193 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Counsel+ Design Tokens
+ *
+ * Three-state theming: System (no data-theme) / Light / Dark.
+ * Light palette defined on bare :root.
+ * Dark palette defined in two places:
+ *   1. @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }
+ *   2. :root[data-theme="dark"]
+ * This ensures explicit toggle always wins over OS preference.
+ * ═══════════════════════════════════════════════════════════════════════════ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  /* Surfaces */
+  --ground: #F7F6F3;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+
+  /* Text */
+  --text-1: #1A1A1A;
+  --text-2: #5C5C5C;
+  --text-3: #8A8A8A;
+
+  /* Borders */
+  --border: #E2E0DC;
+  --border-light: #EEEDEA;
+
+  /* Accent — steel blue */
+  --accent: #4B6A8A;
+  --accent-hover: #3A5570;
+  --accent-muted: #E8EEF4;
+
+  /* AI surfaces */
+  --ai-surface: #EDF1F6;
+
+  /* Semantic — compliance status only */
+  --green: #16A34A;
+  --green-bg: #ECFDF3;
+  --green-text: #15803D;
+  --amber: #D97706;
+  --amber-bg: #FFFBEB;
+  --amber-text: #92400E;
+  --red: #DC2626;
+  --red-bg: #FEF2F2;
+  --red-text: #991B1B;
+
+  /* Component tokens */
+  --card-radius: 8px;
+  --button-radius: 6px;
+  --input-radius: 6px;
+  --pill-radius: 999px;
+
+  /* Focus ring */
+  --focus-ring: #4B6A8A;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --ground: #1C1B19;
+    --surface: #282725;
+    --surface-raised: #333130;
+
+    --text-1: #E6E4E0;
+    --text-2: #A09D96;
+    --text-3: #706D66;
+
+    --border: #3A3835;
+    --border-light: #322F2C;
+
+    --accent: #7A9BBB;
+    --accent-hover: #8FAECE;
+    --accent-muted: #1E2A38;
+
+    --ai-surface: #1E2A38;
+
+    --green: #4ADE80;
+    --green-bg: #0F2A16;
+    --green-text: #86EFAC;
+    --amber: #FBBF24;
+    --amber-bg: #2A1F0A;
+    --amber-text: #FDE68A;
+    --red: #F87171;
+    --red-bg: #2A0F0F;
+    --red-text: #FCA5A5;
+
+    --focus-ring: #7A9BBB;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root[data-theme="dark"] {
+  --ground: #1C1B19;
+  --surface: #282725;
+  --surface-raised: #333130;
+
+  --text-1: #E6E4E0;
+  --text-2: #A09D96;
+  --text-3: #706D66;
+
+  --border: #3A3835;
+  --border-light: #322F2C;
+
+  --accent: #7A9BBB;
+  --accent-hover: #8FAECE;
+  --accent-muted: #1E2A38;
+
+  --ai-surface: #1E2A38;
+
+  --green: #4ADE80;
+  --green-bg: #0F2A16;
+  --green-text: #86EFAC;
+  --amber: #FBBF24;
+  --amber-bg: #2A1F0A;
+  --amber-text: #FDE68A;
+  --red: #F87171;
+  --red-bg: #2A0F0F;
+  --red-text: #FCA5A5;
+
+  --focus-ring: #7A9BBB;
 }
 
-/* ---------------------------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Tailwind v4 Theme Mapping
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+
+  --color-text-1: var(--text-1);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+
+  --color-border: var(--border);
+  --color-border-light: var(--border-light);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-muted: var(--accent-muted);
+
+  --color-ai-surface: var(--ai-surface);
+
+  --color-semantic-green: var(--green);
+  --color-semantic-green-bg: var(--green-bg);
+  --color-semantic-green-text: var(--green-text);
+  --color-semantic-amber: var(--amber);
+  --color-semantic-amber-bg: var(--amber-bg);
+  --color-semantic-amber-text: var(--amber-text);
+  --color-semantic-red: var(--red);
+  --color-semantic-red-bg: var(--red-bg);
+  --color-semantic-red-text: var(--red-text);
+
+  --color-focus-ring: var(--focus-ring);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-source-serif);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Base Styles
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+body {
+  background: var(--ground);
+  color: var(--text-1);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
  * Safe-area inset utilities for iPhone home indicator / Dynamic Island.
  * Requires viewport-fit=cover in the <meta name="viewport"> tag (set via
  * the Next.js `viewport` export in app/layout.tsx).
  * max() ensures a minimum base value when no safe area is present.
- * --------------------------------------------------------------------------- */
+ * ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Fixed element: sit 1.5rem above the home indicator (or above bottom edge) */
 .bottom-safe-6 {
   bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
 }
 
-/* Padding that includes safe area — minimum 1rem base */
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
 }
 
-/* ---------------------------------------------------------------------------
- * Overflow-wrap utility for AI-generated content and long unbroken strings
- * (e.g. long URLs in AI responses). More aggressive than 'break-words' —
- * wraps at any character when necessary to prevent horizontal overflow.
- * Applied only to specific containers, not globally.
- * --------------------------------------------------------------------------- */
+/* ═══════════════════════════════════════════════════════════════════════════
+ * Overflow-wrap utility for AI-generated content and long unbroken strings.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
 .overflow-anywhere {
   overflow-wrap: anywhere;
 }

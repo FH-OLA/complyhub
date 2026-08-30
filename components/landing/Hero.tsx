@@ -1,29 +1,33 @@
 import Link from 'next/link'
-import Button from '@/components/ui/Button'
 
 export default function Hero() {
   return (
-    <section className="bg-gradient-to-b from-indigo-50 to-white px-6 py-12 text-center sm:py-24">
-      <div className="mx-auto max-w-3xl">
-        <span className="mb-4 inline-block rounded-full bg-indigo-100 px-4 py-1 text-sm font-medium text-indigo-700">
-          Built for UK small businesses
-        </span>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-          Stay compliant. <span className="text-indigo-600">Automatically.</span>
+    <section className="px-4 py-16 text-center sm:px-6 sm:py-24">
+      <div className="mx-auto max-w-[640px]">
+        <h1 className="font-display text-4xl font-bold tracking-tight text-text-1 sm:text-5xl lg:text-[3.5rem] lg:leading-[1.1]">
+          Every deadline.{' '}
+          <span className="text-accent">Every company.</span>{' '}
+          One clear view.
         </h1>
-        <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl">
-          ComplyHub monitors your regulatory obligations, tracks filing deadlines, and generates
-          compliance policies — so you can focus on running your business.
+        <p className="mx-auto mt-6 max-w-[480px] text-lg leading-relaxed text-text-2">
+          ComplyHub monitors your Companies House obligations, tracks filing deadlines, and alerts
+          you before anything falls overdue — so you can focus on your business.
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link href="/auth/signup">
-            <Button size="lg">Get started free</Button>
+          <Link
+            href="/auth/signup"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--button-radius)] bg-accent px-6 py-3 text-base font-medium text-white transition-colors hover:bg-accent-hover active:scale-95 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-ground"
+          >
+            Get started free
           </Link>
-          <Link href="/auth/login">
-            <Button size="lg" variant="secondary">Sign in</Button>
+          <Link
+            href="/auth/login"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--button-radius)] border border-accent bg-surface px-6 py-3 text-base font-medium text-accent transition-colors hover:bg-accent-muted active:scale-95 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-ground"
+          >
+            Sign in
           </Link>
         </div>
-        <p className="mt-4 text-sm text-gray-500">No credit card required · Cancel anytime</p>
+        <p className="mt-4 text-sm text-text-3">No credit card required</p>
       </div>
     </section>
   )

@@ -25,6 +25,8 @@ export const PLANS = {
       'Priority compliance alerts',
       'Early deadline warnings',
       'Future premium features',
+      'AI Compliance Advisor',
+      'AI Filing Assistant',
     ],
   },
 } as const

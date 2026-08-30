@@ -51,34 +51,35 @@ export default function FeedbackWidget() {
   return (
     <div className="fixed bottom-safe-6 right-6 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="w-[calc(100vw-3rem)] max-w-xs rounded-2xl border border-gray-200 bg-white shadow-xl sm:w-80">
+        <div className="w-[calc(100vw-3rem)] max-w-xs rounded-[var(--card-radius)] border border-border bg-surface shadow-xl sm:w-80">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <p className="text-sm font-semibold text-gray-900">Beta Feedback</p>
+          <div className="flex items-center justify-between border-b border-border-light px-4 py-3">
+            <p className="text-sm font-semibold text-text-1">Beta Feedback</p>
             <button
               onClick={handleClose}
               aria-label="Close feedback panel"
-              className="text-sm text-gray-400 hover:text-gray-600"
+              className="text-sm text-text-3 hover:text-text-1"
             >
-              ✕
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                <path d="M2 2l10 10M12 2L2 12" />
+              </svg>
             </button>
           </div>
 
           {submitted ? (
             <div className="px-4 py-8 text-center">
-              <p className="text-2xl">🎉</p>
-              <p className="mt-2 text-sm font-semibold text-gray-900">Thanks for your feedback!</p>
-              <p className="mt-1 text-xs text-gray-500">It helps us make ComplyHub better.</p>
+              <p className="mt-2 text-sm font-semibold text-text-1">Thanks for your feedback!</p>
+              <p className="mt-1 text-xs text-text-3">It helps us make ComplyHub better.</p>
               <button
                 onClick={handleClose}
-                className="mt-4 text-xs font-medium text-indigo-600 hover:text-indigo-500"
+                className="mt-4 text-xs font-medium text-accent hover:text-accent-hover"
               >
                 Close
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-4">
-              <p className="mb-3 text-xs text-gray-500">
+              <p className="mb-3 text-xs text-text-3">
                 How is ComplyHub working for you so far?
               </p>
 
@@ -91,7 +92,7 @@ export default function FeedbackWidget() {
                     onClick={() => setRating(star)}
                     aria-label={`Rate ${star} out of 5`}
                     className={`flex min-h-[44px] min-w-[44px] items-center justify-center text-2xl leading-none transition-colors ${
-                      star <= rating ? 'text-amber-400' : 'text-gray-200 hover:text-amber-300'
+                      star <= rating ? 'text-semantic-amber' : 'text-border hover:text-semantic-amber'
                     }`}
                   >
                     ★
@@ -106,15 +107,15 @@ export default function FeedbackWidget() {
                 required
                 rows={3}
                 maxLength={2000}
-                className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full resize-none rounded-[var(--input-radius)] border border-border bg-surface px-3 py-2 text-sm text-text-1 placeholder-text-3 focus:border-accent focus:outline-none focus:ring-2 focus:ring-focus-ring"
               />
 
-              {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+              {error && <p className="mt-1 text-xs text-semantic-red">{error}</p>}
 
               <button
                 type="submit"
                 disabled={submitting || !message.trim()}
-                className="mt-3 w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+                className="mt-3 w-full rounded-[var(--button-radius)] bg-accent py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? 'Sending...' : 'Send feedback'}
               </button>
@@ -125,7 +126,7 @@ export default function FeedbackWidget() {
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-[44px] items-center rounded-full bg-indigo-600 px-4 text-sm font-semibold text-white shadow-lg hover:bg-indigo-700"
+        className="flex min-h-[44px] items-center rounded-[var(--pill-radius)] bg-accent px-4 text-sm font-semibold text-white shadow-lg hover:bg-accent-hover"
         aria-label={open ? 'Close feedback' : 'Open feedback'}
       >
         Feedback

@@ -1,80 +1,102 @@
+import PublicNav from '@/components/landing/PublicNav'
 import Hero from '@/components/landing/Hero'
 import Features from '@/components/landing/Features'
+import Footer from '@/components/landing/Footer'
 import Link from 'next/link'
 import { PLANS } from '@/lib/plans'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <span className="text-xl font-bold text-indigo-600">ComplyHub</span>
-        <div className="flex items-center gap-4">
-          <Link href="/auth/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-            Sign in
-          </Link>
-          <Link
-            href="/auth/signup"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-          >
-            Get started
-          </Link>
-        </div>
-      </nav>
+    <div className="flex min-h-screen flex-col bg-ground">
+      <PublicNav />
 
-      <Hero />
-      <Features />
+      <main className="flex-1">
+        <Hero />
+        <Features />
 
-      {/* Pricing */}
-      <section className="bg-gray-50 px-6 py-24">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Simple, transparent pricing</h2>
-          <p className="mt-4 text-lg text-gray-600">Start free. Upgrade when you need more.</p>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2">
+        {/* Trust */}
+        <section className="border-t border-border-light px-4 py-14 sm:px-6 sm:py-20">
+          <div className="mx-auto grid max-w-[800px] gap-6 text-center sm:grid-cols-3">
             {[
-              { plan: PLANS.free, highlight: false },
-              { plan: PLANS.pro, highlight: true },
-            ].map(({ plan, highlight }) => (
-              <div
-                key={plan.name}
-                className={`rounded-2xl border p-8 text-left ${
-                  highlight
-                    ? 'border-indigo-600 bg-indigo-600 text-white'
-                    : 'border-gray-200 bg-white'
-                }`}
-              >
-                <p className={`text-sm font-semibold ${highlight ? 'text-indigo-200' : 'text-indigo-600'}`}>
-                  {plan.name}
-                </p>
-                <p className={`mt-3 text-4xl font-bold ${highlight ? 'text-white' : 'text-gray-900'}`}>
-                  {plan.price}
-                  <span className={`text-base font-normal ${highlight ? 'text-indigo-200' : 'text-gray-500'}`}>
-                    {plan.period}
-                  </span>
-                </p>
-                <p className={`mt-4 text-sm ${highlight ? 'text-indigo-100' : 'text-gray-600'}`}>
-                  {plan.description}
-                </p>
+              { label: 'Live Companies House data', detail: 'Real-time company status and filing dates' },
+              { label: 'Official filing destinations', detail: 'Direct links to Government services' },
+              { label: 'Built for UK companies', detail: 'Confirmation Statements and Annual Accounts' },
+            ].map(({ label, detail }) => (
+              <div key={label}>
+                <p className="text-sm font-semibold text-text-1">{label}</p>
+                <p className="mt-1 text-xs text-text-3">{detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section className="border-t border-border-light bg-surface px-4 py-16 sm:px-6 sm:py-24">
+          <div className="mx-auto max-w-[640px] text-center">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-text-1 sm:text-3xl">
+              Simple, transparent pricing
+            </h2>
+            <p className="mt-3 text-base text-text-2">Start free. Upgrade when you need more.</p>
+
+            <div className="mt-12 grid gap-6 text-left sm:grid-cols-2">
+              {/* Free */}
+              <div className="rounded-[var(--card-radius)] border border-border bg-ground p-6">
+                <p className="text-sm font-semibold text-accent">{PLANS.free.name}</p>
+                <p className="mt-3 text-3xl font-bold text-text-1">{PLANS.free.price}</p>
+                <p className="mt-2 text-sm text-text-2">{PLANS.free.description}</p>
+                <ul className="mt-5 space-y-2.5 text-sm text-text-2">
+                  {PLANS.free.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <CheckIcon />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
                 <Link
                   href="/auth/signup"
-                  className={`mt-6 block rounded-lg px-4 py-2 text-center text-sm font-medium transition-colors ${
-                    highlight
-                      ? 'bg-white text-indigo-600 hover:bg-indigo-50'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
+                  className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] border border-accent bg-surface text-sm font-medium text-accent transition-colors hover:bg-accent-muted"
                 >
                   Get started free
                 </Link>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 px-6 py-8 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} ComplyHub. Built for UK small businesses.
-      </footer>
+              {/* Pro */}
+              <div className="rounded-[var(--card-radius)] border-2 border-accent bg-ground p-6">
+                <p className="text-sm font-semibold text-accent">{PLANS.pro.name}</p>
+                <p className="mt-3 text-3xl font-bold text-text-1">
+                  {PLANS.pro.price}
+                  <span className="text-base font-normal text-text-3">{PLANS.pro.period}</span>
+                </p>
+                <p className="mt-2 text-sm text-text-2">{PLANS.pro.description}</p>
+                <ul className="mt-5 space-y-2.5 text-sm text-text-2">
+                  {PLANS.pro.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <CheckIcon />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/auth/signup"
+                  className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+                >
+                  Start Pro trial
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
     </div>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0 text-semantic-green" aria-hidden="true">
+      <path d="M4 8.5l2.5 2.5L12 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

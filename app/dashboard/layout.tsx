@@ -18,7 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-ground">
       <Navbar userEmail={user.email ?? ''} />
       <main><Container className="py-10">{children}</Container></main>
       <FeedbackWidget />

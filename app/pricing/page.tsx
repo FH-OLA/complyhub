@@ -1,55 +1,73 @@
 import Link from 'next/link'
 import { PLANS } from '@/lib/plans'
+import PublicNav from '@/components/landing/PublicNav'
+import Footer from '@/components/landing/Footer'
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 text-center sm:py-16">
-      <h1 className="text-4xl font-bold text-gray-900">Simple, transparent pricing</h1>
-      <p className="mt-4 text-gray-600">Start free. Upgrade when you need more.</p>
+    <div className="flex min-h-screen flex-col bg-ground">
+      <PublicNav />
 
-      <div className="mt-12 grid gap-6 md:grid-cols-2">
+      <main className="flex-1 px-4 py-10 sm:px-6 sm:py-16">
+        <div className="mx-auto max-w-[640px] text-center">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-text-1 sm:text-4xl">
+            Simple, transparent pricing
+          </h1>
+          <p className="mt-3 text-base text-text-2">Start free. Upgrade when you need more.</p>
 
-        {/* FREE PLAN */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-left">
-          <h2 className="text-xl font-semibold text-gray-900">{PLANS.free.name}</h2>
-          <p className="mt-1 text-sm text-gray-500">{PLANS.free.description}</p>
-          <p className="mt-4 text-3xl font-bold text-gray-900">{PLANS.free.price}</p>
+          <div className="mt-12 grid gap-6 text-left md:grid-cols-2">
+            {/* Free */}
+            <div className="rounded-[var(--card-radius)] border border-border bg-surface p-6">
+              <h2 className="text-lg font-semibold text-text-1">{PLANS.free.name}</h2>
+              <p className="mt-1 text-sm text-text-2">{PLANS.free.description}</p>
+              <p className="mt-4 text-3xl font-bold text-text-1">{PLANS.free.price}</p>
+              <ul className="mt-6 space-y-2.5 text-sm text-text-2">
+                {PLANS.free.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <CheckMark />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-sm font-medium text-text-3">Always free</p>
+            </div>
 
-          <ul className="mt-6 space-y-3 text-sm text-gray-600">
-            {PLANS.free.features.map((feature) => (
-              <li key={feature}>&#10003; {feature}</li>
-            ))}
-          </ul>
-
-          <div className="mt-8 text-sm font-medium text-gray-400">
-            Always free
+            {/* Pro */}
+            <div className="rounded-[var(--card-radius)] border-2 border-accent bg-surface p-6">
+              <h2 className="text-lg font-semibold text-text-1">{PLANS.pro.name}</h2>
+              <p className="mt-1 text-sm text-text-2">{PLANS.pro.description}</p>
+              <p className="mt-4 text-3xl font-bold text-text-1">
+                {PLANS.pro.price}
+                <span className="text-base font-medium text-text-3">{PLANS.pro.period}</span>
+              </p>
+              <ul className="mt-6 space-y-2.5 text-sm text-text-2">
+                {PLANS.pro.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <CheckMark />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/upgrade"
+                className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+              >
+                Upgrade to Pro
+              </Link>
+            </div>
           </div>
         </div>
+      </main>
 
-        {/* PRO PLAN */}
-        <div className="rounded-2xl border-2 border-indigo-600 bg-white p-8 shadow-md text-left">
-          <h2 className="text-xl font-semibold text-gray-900">{PLANS.pro.name}</h2>
-          <p className="mt-1 text-sm text-gray-500">{PLANS.pro.description}</p>
-          <p className="mt-4 text-3xl font-bold text-gray-900">
-            {PLANS.pro.price}
-            <span className="text-base font-medium text-gray-500">{PLANS.pro.period}</span>
-          </p>
-
-          <ul className="mt-6 space-y-3 text-sm text-gray-600">
-            {PLANS.pro.features.map((feature) => (
-              <li key={feature}>&#10003; {feature}</li>
-            ))}
-          </ul>
-
-          <Link
-            href="/upgrade"
-            className="mt-8 inline-flex min-h-[44px] w-full items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
-            Upgrade to Pro
-          </Link>
-        </div>
-
-      </div>
+      <Footer />
     </div>
+  )
+}
+
+function CheckMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0 text-semantic-green" aria-hidden="true">
+      <path d="M4 8.5l2.5 2.5L12 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }

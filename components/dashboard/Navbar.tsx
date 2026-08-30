@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Button from '@/components/ui/Button'
 import Container from '@/components/ui/Container'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 
 interface NavbarProps {
   userEmail: string
@@ -103,27 +104,27 @@ export default function Navbar({ userEmail }: NavbarProps) {
   const desktopLinkClass = (href: string) =>
     `flex min-h-[44px] items-center rounded px-2 text-sm font-medium transition-colors ${
       pathname === href
-        ? 'text-indigo-600'
-        : 'text-gray-600 hover:text-indigo-600'
+        ? 'text-accent'
+        : 'text-text-2 hover:text-accent'
     }`
 
   const drawerLinkClass = (href: string) =>
-    `flex min-h-[44px] items-center rounded-lg px-3 text-sm font-medium transition-colors ${
+    `flex min-h-[44px] items-center rounded-[var(--button-radius)] px-3 text-sm font-medium transition-colors ${
       pathname === href
-        ? 'bg-indigo-50 text-indigo-600'
-        : 'text-gray-700 hover:bg-gray-50 hover:text-indigo-600'
+        ? 'bg-accent-muted text-accent'
+        : 'text-text-1 hover:bg-accent-muted hover:text-accent'
     }`
 
   return (
     <>
       {/* ── Header bar ────────────────────────────────────────────────────── */}
-      <header className="border-b border-gray-200 bg-white">
+      <header className="border-b border-border bg-surface">
         <Container className="flex items-center justify-between py-4">
 
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-indigo-600">ComplyHub</span>
-            <span className="rounded bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700">
+            <span className="font-display text-xl font-bold text-accent">ComplyHub</span>
+            <span className="rounded-[var(--pill-radius)] bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
               Beta
             </span>
           </div>
@@ -135,7 +136,8 @@ export default function Navbar({ userEmail }: NavbarProps) {
                 {label}
               </Link>
             ))}
-            <span className="hidden text-sm text-gray-500 lg:block">{userEmail}</span>
+            <ThemeToggle />
+            <span className="hidden text-sm text-text-3 lg:block">{userEmail}</span>
             <Button variant="ghost" size="sm" onClick={handleSignOut}>
               Sign out
             </Button>
@@ -149,7 +151,7 @@ export default function Navbar({ userEmail }: NavbarProps) {
             aria-expanded={drawerOpen}
             aria-controls="mobile-nav"
             aria-label="Open navigation"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 md:hidden"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-2 hover:bg-accent-muted focus:outline-none focus:ring-2 focus:ring-focus-ring md:hidden"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -188,19 +190,19 @@ export default function Navbar({ userEmail }: NavbarProps) {
         aria-label="Navigation"
         aria-hidden={!drawerOpen}
         className={[
-          'fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-white shadow-xl md:hidden',
+          'fixed top-0 left-0 z-50 flex h-full w-64 flex-col bg-surface shadow-xl md:hidden',
           'motion-safe:transition-transform motion-safe:duration-300',
           drawerOpen ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}
       >
         {/* Drawer header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-4 py-4">
-          <span className="text-lg font-bold text-indigo-600">ComplyHub</span>
+        <div className="flex shrink-0 items-center justify-between border-b border-border-light px-4 py-4">
+          <span className="font-display text-lg font-bold text-accent">ComplyHub</span>
           <button
             type="button"
             onClick={closeDrawer}
             aria-label="Close navigation"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-3 hover:bg-accent-muted focus:outline-none focus:ring-2 focus:ring-focus-ring"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -222,13 +224,17 @@ export default function Navbar({ userEmail }: NavbarProps) {
           ))}
         </nav>
 
-        {/* Drawer footer — user info + sign out */}
-        <div className="shrink-0 border-t border-gray-100 px-4 pt-4 pb-safe">
-          <p className="mb-3 truncate text-xs text-gray-500">{userEmail}</p>
+        {/* Drawer footer — theme toggle + user info + sign out */}
+        <div className="shrink-0 border-t border-border-light px-4 pt-4 pb-safe">
+          <div className="mb-3 flex items-center gap-2">
+            <ThemeToggle />
+            <span className="text-xs text-text-3">Theme</span>
+          </div>
+          <p className="mb-3 truncate text-xs text-text-3">{userEmail}</p>
           <button
             type="button"
             onClick={() => { closeDrawer(); handleSignOut() }}
-            className="flex w-full min-h-[44px] items-center rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex w-full min-h-[44px] items-center rounded-[var(--button-radius)] px-3 text-sm font-medium text-text-1 hover:bg-accent-muted"
           >
             Sign out
           </button>

@@ -25,15 +25,15 @@ export default function ManageSubscriptionButton() {
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className="flex flex-col gap-1">
       <button
         onClick={handleClick}
         disabled={loading}
-        className="flex min-h-[44px] items-center text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+        className="flex min-h-[44px] items-center text-xs text-text-3 transition-colors hover:text-accent disabled:opacity-50"
       >
-        {loading ? 'Loading...' : 'Manage subscription \u2192'}
+        {loading ? 'Loading...' : 'Manage subscription →'}
       </button>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-semantic-red-text">{error}</p>}
     </div>
   )
 }

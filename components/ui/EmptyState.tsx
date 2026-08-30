@@ -13,27 +13,27 @@ interface EmptyStateProps {
 
 export default function EmptyState({ icon, heading, body, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
+    <div className="flex flex-col items-center rounded-[var(--card-radius)] border border-dashed border-border bg-surface px-6 py-16 text-center">
       {icon && (
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-50 text-2xl">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-ground text-text-3">
           {icon}
         </div>
       )}
-      <h3 className="text-base font-semibold text-gray-900">{heading}</h3>
-      <p className="mt-2 max-w-sm text-sm text-gray-500">{body}</p>
+      <h3 className="text-base font-semibold text-text-1">{heading}</h3>
+      <p className="mt-2 max-w-sm text-sm text-text-2">{body}</p>
       {action && (
         <div className="mt-6">
           {action.href ? (
             <Link
               href={action.href}
-              className="inline-flex items-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2"
             >
               {action.label}
             </Link>
           ) : (
             <button
               onClick={action.onClick}
-              className="inline-flex items-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2"
             >
               {action.label}
             </button>

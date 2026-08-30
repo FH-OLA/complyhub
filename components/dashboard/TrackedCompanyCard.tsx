@@ -19,41 +19,66 @@ interface Props {
   isProUser: boolean
 }
 
-function CompanyStatusBadge({ status }: { status: string }) {
+function StatusDot({ status }: { status: string }) {
   const isActive = status === 'active'
   return (
-    <span
-      className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-        isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      }`}
-    >
-      {status}
+    <span className="flex items-center gap-1.5">
+      <span
+        className={`h-2 w-2 rounded-full ${isActive ? 'bg-semantic-green' : 'bg-text-3'}`}
+        aria-hidden="true"
+      />
+      <span className={`text-xs capitalize ${isActive ? 'text-text-2' : 'text-text-3'}`}>
+        {status}
+      </span>
     </span>
   )
 }
 
-function CompliancePill({
+function ComplianceRow({
+  label,
   status,
   daysRemaining,
+  dueDate,
+  lastFiled,
 }: {
+  label: string
   status: 'ok' | 'due_soon' | 'overdue'
   daysRemaining: number
+  dueDate: string
+  lastFiled: string
 }) {
-  const styles = {
-    ok: 'bg-green-100 text-green-700',
-    due_soon: 'bg-orange-100 text-orange-700',
-    overdue: 'bg-red-100 text-red-700',
+  const statusStyles = {
+    ok: 'bg-semantic-green-bg text-semantic-green-text',
+    due_soon: 'bg-semantic-amber-bg text-semantic-amber-text',
+    overdue: 'bg-semantic-red-bg text-semantic-red-text',
   }
 
-  const label =
+  const statusLabel =
     status === 'overdue'
       ? `Overdue by ${Math.abs(daysRemaining)} days`
       : `Due in ${daysRemaining} days`
 
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${styles[status]}`}>
-      {label}
-    </span>
+    <div className="rounded-[var(--button-radius)] bg-ground px-4 py-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-text-1">{label}</p>
+          {lastFiled && (
+            <p className="mt-0.5 text-xs text-text-3">Last filed {lastFiled}</p>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-col items-start gap-1 sm:items-end">
+          <span
+            className={`rounded-[var(--pill-radius)] px-2 py-0.5 text-xs font-medium tabular-nums ${statusStyles[status]}`}
+          >
+            {statusLabel}
+          </span>
+          {dueDate && (
+            <span className="text-xs tabular-nums text-text-3">{dueDate}</span>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -87,131 +112,132 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
     trackEvent('company_removed')
   }
 
+  const isDissolved = company.company_status === 'dissolved'
   const csLastFiled = formatDate(company.confirmation_statement?.last_made_up_to ?? '')
   const accLastFiled = formatDate(company.accounts?.last_accounts?.made_up_to ?? '')
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
+    <article className="rounded-[var(--card-radius)] border border-border bg-surface p-5">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="break-words text-lg font-semibold text-gray-900">{company.company_name}</h2>
-          <p className="mt-1 text-sm text-gray-500">#{company.company_number}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="break-words text-base font-semibold text-text-1">
+            {company.company_name}
+          </h2>
+          <p className="mt-0.5 text-xs tabular-nums text-text-3">
+            #{company.company_number}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tierConfig.badge}`}>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <span
+            className={`rounded-[var(--pill-radius)] px-2.5 py-0.5 text-xs font-medium ${tierConfig.badge}`}
+          >
             {tierConfig.label}
           </span>
-          <CompanyStatusBadge status={company.company_status} />
+          <StatusDot status={company.company_status} />
         </div>
       </div>
 
+      {/* Alerts — preserved conditions exactly */}
       {company.company_status === 'active' && compliance.accounts.status === 'due_soon' && (
-        <div className="mt-4 rounded-lg bg-orange-50 p-3 text-sm text-orange-700">
-          ⚠️ Action needed soon: Accounts due
+        <div className="mt-4 flex items-start gap-2.5 rounded-[var(--button-radius)] border-l-2 border-semantic-amber bg-semantic-amber-bg px-3 py-2.5">
+          <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-semantic-amber" aria-hidden="true" />
+          <p className="text-sm text-semantic-amber-text">
+            Accounts due soon — review your filing deadline.
+          </p>
         </div>
       )}
 
       {company.company_status === 'active' && compliance.accounts.status === 'overdue' && (
-        <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
-          🚨 Urgent: Accounts overdue
+        <div className="mt-4 flex items-start gap-2.5 rounded-[var(--button-radius)] border-l-2 border-semantic-red bg-semantic-red-bg px-3 py-2.5">
+          <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-semantic-red" aria-hidden="true" />
+          <p className="text-sm text-semantic-red-text">
+            Accounts overdue — file as soon as possible.
+          </p>
         </div>
       )}
 
-      {/* Compliance rows */}
-      <div className="mt-5 space-y-2">
-        <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-          <span className="text-sm text-gray-700">Confirmation Statement</span>
-          {company.company_status === 'dissolved' ? (
-            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
-              No action
-            </span>
-          ) : (
-            <div className="flex flex-col items-end gap-0.5">
-              <CompliancePill
-                status={compliance.confirmationStatement.status}
-                daysRemaining={compliance.confirmationStatement.daysRemaining}
-              />
-              <span className="text-xs text-gray-400">
-                {formatDate(compliance.confirmationStatement.dueDate)}
-              </span>
-              {csLastFiled && (
-                <span className="text-xs text-gray-400">Last filed: {csLastFiled}</span>
-              )}
-            </div>
-          )}
+      {/* Filing obligations */}
+      {isDissolved ? (
+        <div className="mt-4 rounded-[var(--button-radius)] bg-ground px-4 py-3">
+          <p className="text-sm text-text-3">No filing obligations</p>
         </div>
+      ) : (
+        <div className="mt-4 space-y-2">
+          <ComplianceRow
+            label="Confirmation Statement"
+            status={compliance.confirmationStatement.status}
+            daysRemaining={compliance.confirmationStatement.daysRemaining}
+            dueDate={formatDate(compliance.confirmationStatement.dueDate)}
+            lastFiled={csLastFiled}
+          />
+          <ComplianceRow
+            label="Annual Accounts"
+            status={compliance.accounts.status}
+            daysRemaining={compliance.accounts.daysRemaining}
+            dueDate={formatDate(compliance.accounts.dueDate)}
+            lastFiled={accLastFiled}
+          />
+        </div>
+      )}
 
-        <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
-          <span className="text-sm text-gray-700">Accounts Filing</span>
-          {company.company_status === 'dissolved' ? (
-            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
-              N/A
-            </span>
+      <p className="mt-3 text-xs text-text-3">Companies House data refreshed hourly</p>
+
+      {/* Actions — report, AI tools */}
+      <div className="mt-4 border-t border-border-light pt-4">
+        <DownloadReportButton trackedId={trackedId} />
+
+        {isProUser ? (
+          <AiAdvisor trackedId={trackedId} />
+        ) : (
+          <AiAdvisorLocked />
+        )}
+
+        {!isDissolved && (
+          isProUser ? (
+            <FilingAssistant trackedId={trackedId} />
           ) : (
-            <div className="flex flex-col items-end gap-0.5">
-              <CompliancePill
-                status={compliance.accounts.status}
-                daysRemaining={compliance.accounts.daysRemaining}
-              />
-              <span className="text-xs text-gray-400">
-                {formatDate(compliance.accounts.dueDate)}
-              </span>
-              {accLastFiled && (
-                <span className="text-xs text-gray-400">Last filed: {accLastFiled}</span>
-              )}
-            </div>
-          )}
-        </div>
+            <FilingAssistantLocked />
+          )
+        )}
       </div>
 
-      <p className="mt-4 text-xs text-gray-400">Companies House data refreshed hourly</p>
-
-      <DownloadReportButton trackedId={trackedId} />
-
-      {isProUser ? (
-        <AiAdvisor trackedId={trackedId} />
-      ) : (
-        <AiAdvisorLocked />
-      )}
-
-      {company.company_status !== 'dissolved' && (
-        isProUser ? (
-          <FilingAssistant trackedId={trackedId} />
-        ) : (
-          <FilingAssistantLocked />
-        )
-      )}
-
-      {confirmingRemove ? (
-        <div className="mt-5 rounded-xl border border-gray-200 p-3">
-          <p className="mb-3 text-sm text-gray-700">Remove this company from tracking?</p>
-          {removeError && <p className="mb-2 text-xs text-red-600">{removeError}</p>}
-          <div className="flex gap-2">
-            <button
-              onClick={() => { setConfirmingRemove(false); setRemoveError('') }}
-              disabled={removing}
-              className="flex-1 rounded-lg border border-gray-200 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50 min-h-[44px]"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleRemove}
-              disabled={removing}
-              className="flex-1 rounded-lg bg-red-600 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 min-h-[44px]"
-            >
-              {removing ? 'Removing...' : 'Remove'}
-            </button>
+      {/* Remove company */}
+      <div className="mt-4 border-t border-border-light pt-3">
+        {confirmingRemove ? (
+          <div className="rounded-[var(--card-radius)] border border-border p-3">
+            <p className="text-sm text-text-1">Remove this company from tracking?</p>
+            {removeError && (
+              <p className="mt-1 text-xs text-semantic-red-text" role="alert">
+                {removeError}
+              </p>
+            )}
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => { setConfirmingRemove(false); setRemoveError('') }}
+                disabled={removing}
+                className="flex min-h-[44px] flex-1 items-center justify-center rounded-[var(--button-radius)] border border-border bg-surface text-sm text-text-2 transition-colors hover:bg-ground disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRemove}
+                disabled={removing}
+                className="flex min-h-[44px] flex-1 items-center justify-center rounded-[var(--button-radius)] border border-semantic-red bg-semantic-red-bg text-sm font-medium text-semantic-red-text transition-colors hover:opacity-90 disabled:opacity-50"
+              >
+                {removing ? 'Removing...' : 'Confirm remove'}
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => setConfirmingRemove(true)}
-          className="mt-5 w-full rounded-xl border border-red-200 py-2 text-sm font-medium text-red-600 hover:bg-red-50 min-h-[44px]"
-        >
-          Remove company
-        </button>
-      )}
-    </div>
+        ) : (
+          <button
+            onClick={() => setConfirmingRemove(true)}
+            className="inline-flex min-h-[44px] items-center text-xs text-text-3 transition-colors hover:text-semantic-red-text"
+          >
+            Remove company
+          </button>
+        )}
+      </div>
+    </article>
   )
 }

@@ -78,7 +78,7 @@ export default function LandingPage() {
                 </ul>
                 <Link
                   href="/auth/signup"
-                  className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+                  className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover"
                 >
                   Start Pro trial
                 </Link>

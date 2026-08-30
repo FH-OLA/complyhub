@@ -18,14 +18,14 @@ export default function DashboardPage() {
       />
 
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className="font-display text-[28px] font-bold text-text-1">Dashboard</h1>
+        <p className="mt-1 text-sm text-text-2">
           Look up a UK company number to view its live compliance status.
         </p>
       </div>
 
-      <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-base font-semibold text-gray-900">Company Lookup</h2>
+      <section className="rounded-[var(--card-radius)] border border-border bg-surface p-5">
+        <h2 className="mb-4 text-sm font-semibold text-text-1">Company Lookup</h2>
         <CompanyLookupForm onResult={(result) => { setCompany(result); if (!result) setCompanyTracked(false) }} />
         {company && (
           <CompanyCard

@@ -115,7 +115,7 @@ export default function FeedbackWidget() {
               <button
                 type="submit"
                 disabled={submitting || !message.trim()}
-                className="mt-3 w-full rounded-[var(--button-radius)] bg-accent py-2 text-sm font-semibold text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-3 w-full rounded-[var(--button-radius)] bg-accent py-2 text-sm font-semibold text-accent-fg hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {submitting ? 'Sending...' : 'Send feedback'}
               </button>
@@ -126,7 +126,7 @@ export default function FeedbackWidget() {
 
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-[44px] items-center rounded-[var(--pill-radius)] bg-accent px-4 text-sm font-semibold text-white shadow-lg hover:bg-accent-hover"
+        className="flex min-h-[44px] items-center rounded-[var(--pill-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg shadow-lg hover:bg-accent-hover"
         aria-label={open ? 'Close feedback' : 'Open feedback'}
       >
         Feedback

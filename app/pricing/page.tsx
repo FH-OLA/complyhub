@@ -50,7 +50,7 @@ export default function PricingPage() {
               </ul>
               <Link
                 href="/upgrade"
-                className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-semibold text-white transition-colors hover:bg-accent-hover"
+                className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover"
               >
                 Upgrade to Pro
               </Link>

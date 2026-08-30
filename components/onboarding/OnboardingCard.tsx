@@ -56,41 +56,41 @@ export default function OnboardingCard({
   const progressPct = (completedCount / STEPS.length) * 100
 
   return (
-    <div className="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50 p-6 shadow-sm">
+    <div className="mb-8 rounded-[var(--card-radius)] border border-border bg-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-semibold text-indigo-900">Welcome to ComplyHub</h2>
-          <p className="mt-1 text-sm text-indigo-700">
-            Get started in three steps — takes less than a minute.
+          <h2 className="text-sm font-semibold text-text-1">Get started</h2>
+          <p className="mt-1 text-[13px] text-text-2">
+            Three steps — takes less than a minute.
           </p>
         </div>
         <button
           onClick={handleDismiss}
           disabled={dismissing}
           aria-label="Dismiss onboarding guide"
-          className="shrink-0 rounded p-1 text-indigo-400 transition-colors hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+          className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-[var(--button-radius)] text-text-3 transition-colors hover:bg-ground hover:text-text-2 focus:outline-none focus:ring-2 focus:ring-focus-ring disabled:opacity-50"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+            <path d="M3 3l8 8M11 3l-8 8" />
           </svg>
         </button>
       </div>
 
       {/* Progress bar */}
-      <div className="mt-4">
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-indigo-100">
+      <div className="mt-3">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-border-light">
           <div
-            className="h-1.5 rounded-full bg-indigo-500 transition-all duration-500"
+            className="h-1 rounded-full bg-accent transition-all duration-500"
             style={{ width: `${progressPct}%` }}
           />
         </div>
-        <p className="mt-1.5 text-xs text-indigo-500">
+        <p className="mt-1.5 text-xs text-text-3">
           {completedCount} of {STEPS.length} steps complete
         </p>
       </div>
 
       {/* Step list */}
-      <ol className="mt-4 space-y-3">
+      <ol className="mt-3 space-y-2.5">
         {STEPS.map((step, i) => {
           const done = stepDone[i] ?? false
           const active = i === completedCount && !done
@@ -100,29 +100,35 @@ export default function OnboardingCard({
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
                   done
-                    ? 'bg-indigo-500 text-white'
+                    ? 'bg-accent text-accent-fg'
                     : active
-                      ? 'border-2 border-indigo-400 bg-white text-indigo-600'
-                      : 'bg-indigo-100 text-indigo-300'
+                      ? 'border-2 border-accent bg-surface text-accent'
+                      : 'bg-ground text-text-3 border border-border-light'
                 }`}
                 aria-hidden="true"
               >
-                {done ? '✓' : i + 1}
+                {done ? (
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+                    <path d="M2 5l2 2 4-4" />
+                  </svg>
+                ) : (
+                  i + 1
+                )}
               </span>
               <div className="min-w-0">
                 <p
-                  className={`text-sm font-medium ${
+                  className={`text-[13px] font-medium ${
                     done
-                      ? 'text-indigo-400 line-through decoration-indigo-300'
+                      ? 'text-text-3 line-through'
                       : active
-                        ? 'text-indigo-900'
-                        : 'text-indigo-500'
+                        ? 'text-text-1'
+                        : 'text-text-3'
                   }`}
                 >
                   {step.label}
                 </p>
                 {active && (
-                  <p className="mt-0.5 text-xs leading-relaxed text-indigo-600">
+                  <p className="mt-0.5 text-xs leading-relaxed text-text-2">
                     {step.description}
                   </p>
                 )}
@@ -134,10 +140,10 @@ export default function OnboardingCard({
 
       {/* CTA when company is tracked */}
       {companyTracked && (
-        <div className="mt-5 border-t border-indigo-100 pt-4">
+        <div className="mt-4 border-t border-border-light pt-3">
           <Link
             href="/my-companies"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 transition-colors hover:text-indigo-800"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent transition-colors hover:text-accent-hover"
           >
             View My Companies
             <span aria-hidden="true">&rarr;</span>

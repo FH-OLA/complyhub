@@ -13,9 +13,9 @@ function formatDays(days: number) {
 }
 
 function getStatusColor(status: string) {
-  if (status === 'overdue') return 'text-red-600'
-  if (status === 'due_soon') return 'text-orange-500'
-  return 'text-green-600'
+  if (status === 'overdue') return 'text-semantic-red-text'
+  if (status === 'due_soon') return 'text-semantic-amber-text'
+  return 'text-semantic-green-text'
 }
 
 function formatDate(isoString: string): string {
@@ -44,70 +44,76 @@ export default function CompanyCard({ company, onTracked }: Props) {
       .finally(() => setCheckingTracked(false))
   }, [company.company_number])
 
-  return (
-    <div className="mt-6 max-w-2xl rounded-2xl border border-gray-200 bg-white p-6 shadow-lg">
-      <h2 className="break-words text-2xl font-bold text-gray-900">{company.company_name}</h2>
+  const isActive = company.company_status === 'active'
 
-      <p className="mt-1 text-sm text-gray-500">
+  return (
+    <div className="mt-6 max-w-2xl rounded-[var(--card-radius)] border border-border bg-surface p-5">
+      <h2 className="break-words text-lg font-semibold text-text-1">{company.company_name}</h2>
+
+      <p className="mt-1 text-[13px] text-text-2">
         {company.company_number}
         {company.company_type ? ` · ${company.company_type.replace(/-/g, ' ')}` : ''}
       </p>
 
-      <p
-        className={`mt-2 font-semibold ${
-          company.company_status === 'active' ? 'text-green-600' : 'text-red-600'
-        }`}
-      >
-        {company.company_status === 'active' ? '🟢 Active' : '🔴 Dissolved'}
-      </p>
+      <div className={`mt-2 flex items-center gap-1.5 text-[13px] font-semibold ${
+        isActive ? 'text-semantic-green-text' : 'text-text-3'
+      }`}>
+        <span
+          className={`inline-block h-2 w-2 rounded-full ${
+            isActive ? 'bg-semantic-green' : 'bg-text-3'
+          }`}
+          aria-hidden="true"
+        />
+        {isActive ? 'Active' : 'Dissolved'}
+      </div>
 
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-[13px] text-text-2">
         {company.registered_office_address?.address_line_1},{' '}
         {company.registered_office_address?.locality},{' '}
         {company.registered_office_address?.postal_code}
       </p>
 
-      <div className="mt-6">
-        <h3 className="mb-3 text-sm font-semibold text-gray-800">
+      <div className="mt-5">
+        <h3 className="mb-3 text-sm font-semibold text-text-1">
           Compliance Status
         </h3>
 
         {company.company_status === 'dissolved' ? (
-          <div className="rounded-xl bg-red-50 p-4">
-            <p className="font-semibold text-red-700">Company dissolved</p>
-            <p className="text-sm text-red-600">
+          <div className="rounded-[var(--button-radius)] bg-ground px-4 py-3">
+            <p className="text-[13px] font-medium text-text-2">Company dissolved</p>
+            <p className="text-xs text-text-3">
               No compliance obligations remaining
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span className="text-sm text-gray-700">Confirmation Statement</span>
+          <div className="space-y-2">
+            <div className="flex justify-between rounded-[var(--button-radius)] bg-ground px-4 py-3">
+              <span className="text-[13px] text-text-2">Confirmation Statement</span>
               <div className="text-right">
                 <span
-                  className={`text-sm font-semibold ${getStatusColor(
+                  className={`text-[13px] font-semibold ${getStatusColor(
                     company.compliance.confirmationStatement.status
                   )}`}
                 >
                   {formatDays(company.compliance.confirmationStatement.daysRemaining)}
                 </span>
-                <span className="block text-xs text-gray-400">
+                <span className="block text-[11px] text-text-3">
                   {formatDate(company.compliance.confirmationStatement.dueDate)}
                 </span>
               </div>
             </div>
 
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span className="text-sm text-gray-700">Accounts Filing</span>
+            <div className="flex justify-between rounded-[var(--button-radius)] bg-ground px-4 py-3">
+              <span className="text-[13px] text-text-2">Accounts Filing</span>
               <div className="text-right">
                 <span
-                  className={`text-sm font-semibold ${getStatusColor(
+                  className={`text-[13px] font-semibold ${getStatusColor(
                     company.compliance.accounts.status
                   )}`}
                 >
                   {formatDays(company.compliance.accounts.daysRemaining)}
                 </span>
-                <span className="block text-xs text-gray-400">
+                <span className="block text-[11px] text-text-3">
                   {formatDate(company.compliance.accounts.dueDate)}
                 </span>
               </div>
@@ -117,11 +123,11 @@ export default function CompanyCard({ company, onTracked }: Props) {
       </div>
 
       {message && (
-        <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+        <div className="mt-4 rounded-[var(--button-radius)] bg-semantic-green-bg px-3 py-3 text-[13px] text-semantic-green-text">
           <p>{message}</p>
           <a
             href="/my-companies"
-            className="mt-1 inline-block font-semibold text-green-800 hover:underline"
+            className="mt-1 inline-block font-semibold text-accent hover:underline"
           >
             View in My Companies &rarr;
           </a>
@@ -129,20 +135,20 @@ export default function CompanyCard({ company, onTracked }: Props) {
       )}
 
       {errorMsg && (
-        <div className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <div className="mt-4 rounded-[var(--button-radius)] bg-semantic-red-bg px-3 py-3 text-[13px] text-semantic-red-text">
           {errorMsg}
         </div>
       )}
 
       {showUpgradePrompt && (
-        <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
-          <p className="text-sm font-semibold text-indigo-900">Free plan limit reached</p>
-          <p className="mt-1 text-sm text-indigo-700">
+        <div className="mt-4 rounded-[var(--card-radius)] border border-border bg-accent-muted p-4">
+          <p className="text-sm font-semibold text-text-1">Free plan limit reached</p>
+          <p className="mt-1 text-[13px] text-text-2">
             You can track 1 company on the free plan. Upgrade to Pro to track unlimited companies.
           </p>
           <a
             href="/upgrade"
-            className="mt-3 inline-block rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="mt-3 inline-block rounded-[var(--button-radius)] bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:bg-accent-hover"
           >
             Upgrade to Pro
           </a>
@@ -196,10 +202,10 @@ export default function CompanyCard({ company, onTracked }: Props) {
             setLoading(false)
           }
         }}
-        className={`mt-6 w-full rounded-xl py-2 text-white min-h-[44px] ${
+        className={`mt-5 w-full rounded-[var(--button-radius)] py-2 min-h-[44px] font-medium transition-colors ${
           tracked || loading || checkingTracked
-            ? 'cursor-not-allowed bg-gray-400'
-            : 'bg-black hover:bg-gray-800'
+            ? 'cursor-not-allowed bg-accent text-accent-fg opacity-50'
+            : 'bg-accent text-accent-fg hover:bg-accent-hover'
         }`}
       >
         {checkingTracked

@@ -51,6 +51,9 @@
   --input-radius: 6px;
   --pill-radius: 999px;
 
+  /* Accent foreground — accessible text on bg-accent in both themes */
+  --accent-fg: #FFFFFF;
+
   /* Focus ring */
   --focus-ring: #4B6A8A;
 }
@@ -73,6 +76,8 @@
     --accent-muted: #1E2A38;
 
     --ai-surface: #1E2A38;
+
+    --accent-fg: #1A1A1A;
 
     --green: #4ADE80;
     --green-bg: #0F2A16;
@@ -106,6 +111,8 @@
 
   --ai-surface: #1E2A38;
 
+  --accent-fg: #1A1A1A;
+
   --green: #4ADE80;
   --green-bg: #0F2A16;
   --green-text: #86EFAC;
@@ -138,6 +145,7 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-muted: var(--accent-muted);
+  --color-accent-fg: var(--accent-fg);
 
   --color-ai-surface: var(--ai-surface);
 

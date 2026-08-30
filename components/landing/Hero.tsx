@@ -16,7 +16,7 @@ export default function Hero() {
         <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/auth/signup"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--button-radius)] bg-accent px-6 py-3 text-base font-medium text-white transition-colors hover:bg-accent-hover active:scale-95 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-ground"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-[var(--button-radius)] bg-accent px-6 py-3 text-base font-medium text-accent-fg transition-colors hover:bg-accent-hover active:scale-95 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-ground"
           >
             Get started free
           </Link>

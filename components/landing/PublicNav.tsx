@@ -87,7 +87,7 @@ export default function PublicNav() {
             </Link>
             <Link
               href="/auth/signup"
-              className="flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+              className="flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover"
             >
               Get started
             </Link>

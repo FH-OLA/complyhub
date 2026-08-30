@@ -3,10 +3,10 @@ import type { ComplianceResult } from '@/lib/compliance'
 export type HealthTier = 'healthy' | 'attention' | 'action' | 'dissolved'
 
 export const HEALTH_TIER_CONFIG: Record<HealthTier, { label: string; badge: string }> = {
-  healthy: { label: 'Healthy', badge: 'bg-green-100 text-green-700' },
-  attention: { label: 'Attention needed', badge: 'bg-amber-100 text-amber-700' },
-  action: { label: 'Action required', badge: 'bg-red-100 text-red-700' },
-  dissolved: { label: 'Dissolved', badge: 'bg-gray-100 text-gray-500' },
+  healthy: { label: 'Healthy', badge: 'bg-semantic-green-bg text-semantic-green-text' },
+  attention: { label: 'Attention needed', badge: 'bg-semantic-amber-bg text-semantic-amber-text' },
+  action: { label: 'Action required', badge: 'bg-semantic-red-bg text-semantic-red-text' },
+  dissolved: { label: 'Dissolved', badge: 'bg-ground text-text-3 border border-border-light' },
 }
 
 function obligationPenalty(

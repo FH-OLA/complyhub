@@ -67,19 +67,27 @@ export default function AiAdvisor({ trackedId }: Props) {
     ask(q)
   }
 
-  // ── Collapsed header ──────────────────────────────────────────────────────
+  // ── Collapsed state ───────────────────────────────────────────────────────
   if (!expanded) {
     return (
-      <div className="mt-5 border-t border-gray-100 pt-4">
+      <div className="mt-4 border-t border-border-light pt-4">
         <button
           type="button"
           onClick={handleExpand}
-          className="flex w-full items-center justify-between text-left"
+          aria-expanded="false"
+          className="flex w-full min-h-[44px] items-center justify-between gap-3 rounded-[var(--button-radius)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
-          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            ✦ AI Compliance Advisor
-          </span>
-          <span className="text-xs text-indigo-500">Ask a question ›</span>
+          <div className="flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-3" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.5" />
+              <path d="M6 6.5a2 2 0 013.5 1.5c0 1-1.5 1-1.5 2M8 12v.01" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-text-1">Compliance Advisor</p>
+              <p className="hidden text-xs text-text-3 sm:block">Ask questions about this company&apos;s compliance position.</p>
+            </div>
+          </div>
+          <span className="shrink-0 text-xs text-accent">Ask &rsaquo;</span>
         </button>
       </div>
     )
@@ -87,10 +95,8 @@ export default function AiAdvisor({ trackedId }: Props) {
 
   // ── Expanded advisor ──────────────────────────────────────────────────────
   return (
-    <div className="mt-5 border-t border-gray-100 pt-4">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-indigo-600">
-        ✦ AI Compliance Advisor
-      </p>
+    <div className="mt-4 border-t border-border-light pt-4">
+      <p className="mb-3 text-sm font-medium text-text-1">Compliance Advisor</p>
 
       {/* Suggested questions */}
       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -100,33 +106,34 @@ export default function AiAdvisor({ trackedId }: Props) {
             type="button"
             onClick={() => handleSuggestion(q)}
             disabled={loading}
-            className="min-h-[44px] max-w-full rounded-full border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-700 transition-colors hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="min-h-[44px] max-w-full rounded-[var(--button-radius)] border border-border bg-ground px-3 py-2 text-xs text-text-2 transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             {q}
           </button>
         ))}
       </div>
 
-      {/* Question input — stacks vertically on mobile, horizontal on sm+ */}
+      {/* Question input */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
+          aria-label="Ask a compliance question"
           placeholder="Ask about this company's compliance…"
           maxLength={500}
           disabled={loading}
-          className="min-w-0 flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:opacity-50"
+          className="min-h-[44px] min-w-0 flex-1 rounded-[var(--input-radius)] border border-border bg-surface px-3 py-2 text-sm text-text-1 placeholder:text-text-3 focus:border-accent focus:outline-none focus:ring-2 focus:ring-focus-ring disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={loading || !question.trim()}
-          className="flex min-h-[44px] shrink-0 items-center justify-center rounded-xl bg-indigo-600 px-4 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex min-h-[44px] shrink-0 items-center justify-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
             <span className="flex items-center gap-1.5">
               <span
-                className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"
+                className="h-3 w-3 animate-spin rounded-full border-2 border-accent-fg border-t-transparent motion-reduce:animate-none"
                 aria-hidden="true"
               />
               Thinking…
@@ -137,12 +144,12 @@ export default function AiAdvisor({ trackedId }: Props) {
         </button>
       </form>
 
-      {/* Loading state (while awaiting first answer) */}
+      {/* Loading state */}
       {loading && !answer && (
-        <div className="mt-3 rounded-xl bg-indigo-50 p-4">
-          <div className="flex items-center gap-2 text-sm text-indigo-700">
+        <div className="mt-3 rounded-[var(--card-radius)] bg-ai-surface p-4">
+          <div className="flex items-center gap-2 text-sm text-text-2">
             <span
-              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent border-t-transparent motion-reduce:animate-none"
               aria-hidden="true"
             />
             Analysing compliance data…
@@ -152,20 +159,20 @@ export default function AiAdvisor({ trackedId }: Props) {
 
       {/* Error */}
       {error && (
-        <p className="mt-3 text-sm text-red-600" role="alert">
+        <p className="mt-3 text-sm text-semantic-red-text" role="alert">
           {error}
         </p>
       )}
 
-      {/* Answer — overflow-anywhere handles long URLs and unbroken AI output */}
+      {/* Answer */}
       {answer && (
-        <div className="overflow-anywhere mt-3 rounded-xl bg-indigo-50 p-4">
+        <div className="overflow-anywhere mt-3 rounded-[var(--card-radius)] bg-ai-surface p-4">
           <AdvisorMarkdown content={answer} />
         </div>
       )}
 
-      {/* Hardcoded disclaimer — not AI-generated, not suppressible */}
-      <p className="mt-3 text-xs text-gray-400">
+      {/* Disclaimer */}
+      <p className="mt-3 text-xs text-text-3">
         AI guidance is for informational purposes only and does not constitute
         legal or accounting advice.
       </p>

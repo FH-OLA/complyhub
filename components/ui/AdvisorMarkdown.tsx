@@ -1,12 +1,3 @@
-// Shared markdown renderer for AI advisor and filing assistant responses.
-//
-// Processes AI responses as React elements — no dangerouslySetInnerHTML,
-// no arbitrary HTML. Handles the specific constructs the model emits:
-// headings (# / ##), bold (**text**), bullet lists (- / *), numbered lists,
-// and paragraphs. Uses a line-by-line state machine so mixed content
-// (e.g. a paragraph immediately followed by a list without a blank line)
-// is handled correctly.
-
 function renderInline(text: string): React.ReactNode {
   const segments = text.split(/(\*\*[^*]+\*\*)/g)
   return (
@@ -67,7 +58,7 @@ export default function AdvisorMarkdown({ content }: { content: string }) {
     if (trimmed.startsWith('## ')) {
       flushPara(`p${k}`); flushList(`l${k}`)
       nodes.push(
-        <h4 key={k} className="font-semibold text-gray-900">
+        <h4 key={k} className="font-semibold text-text-1">
           {renderInline(trimmed.slice(3))}
         </h4>,
       )
@@ -77,7 +68,7 @@ export default function AdvisorMarkdown({ content }: { content: string }) {
     if (trimmed.startsWith('# ')) {
       flushPara(`p${k}`); flushList(`l${k}`)
       nodes.push(
-        <h3 key={k} className="font-semibold text-gray-900">
+        <h3 key={k} className="font-semibold text-text-1">
           {renderInline(trimmed.slice(2))}
         </h3>,
       )
@@ -103,7 +94,6 @@ export default function AdvisorMarkdown({ content }: { content: string }) {
       return
     }
 
-    // Regular text — accumulate into paragraph, flushing any open list first.
     flushList(`l${k}`)
     paraLines.push(trimmed)
   })
@@ -112,7 +102,7 @@ export default function AdvisorMarkdown({ content }: { content: string }) {
   flushList('l-end')
 
   return (
-    <div className="space-y-2 text-sm text-gray-800">
+    <div className="space-y-2 text-sm text-text-2">
       {nodes}
     </div>
   )

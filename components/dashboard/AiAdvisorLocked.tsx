@@ -11,19 +11,24 @@ export default function AiAdvisorLocked() {
     trackEvent('ai_upgrade_prompt_shown')
   }
 
-  // ── Collapsed header ──────────────────────────────────────────────────────
+  // ── Collapsed state ───────────────────────────────────────────────────────
   if (!expanded) {
     return (
-      <div className="mt-5 border-t border-gray-100 pt-4">
+      <div className="mt-4 border-t border-border-light pt-4">
         <button
           type="button"
           onClick={handleExpand}
-          className="flex w-full items-center justify-between text-left"
+          aria-expanded="false"
+          className="flex w-full min-h-[44px] items-center justify-between gap-3 rounded-[var(--button-radius)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
-          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            ✦ AI Compliance Advisor
-          </span>
-          <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+          <div className="flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-3" aria-hidden="true">
+              <circle cx="8" cy="8" r="6.5" />
+              <path d="M6 6.5a2 2 0 013.5 1.5c0 1-1.5 1-1.5 2M8 12v.01" />
+            </svg>
+            <p className="text-sm font-medium text-text-1">Compliance Advisor</p>
+          </div>
+          <span className="shrink-0 rounded-[var(--pill-radius)] bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
             Pro
           </span>
         </button>
@@ -33,34 +38,47 @@ export default function AiAdvisorLocked() {
 
   // ── Expanded locked panel ─────────────────────────────────────────────────
   return (
-    <div className="mt-5 border-t border-gray-100 pt-4">
+    <div className="mt-4 border-t border-border-light pt-4">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-          ✦ AI Compliance Advisor
-        </p>
-        <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
-          Pro feature
+        <p className="text-sm font-medium text-text-1">Compliance Advisor</p>
+        <span className="rounded-[var(--pill-radius)] bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
+          Pro
         </span>
       </div>
 
-      <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-        <p className="mb-2 text-sm font-medium text-indigo-900">Ask questions like:</p>
-        <ul className="mb-4 space-y-1 text-sm text-indigo-700">
-          <li>• What should I do next?</li>
-          <li>• Is anything overdue?</li>
-          <li>• Which filing should I prioritise?</li>
-          <li>• Explain my compliance score.</li>
-          <li>• Summarise this company&apos;s compliance position.</li>
+      <div className="rounded-[var(--card-radius)] border border-border bg-ground p-4">
+        <p className="mb-2 text-sm font-medium text-text-1">Ask questions like:</p>
+        <ul className="mb-3 space-y-1 text-sm text-text-2">
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            What should I do next?
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Is anything overdue?
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Which filing should I prioritise?
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Explain my compliance score.
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Summarise this company&apos;s compliance position.
+          </li>
         </ul>
-        <p className="mb-4 text-sm text-indigo-700">
-          Upgrade to Pro to unlock AI-powered compliance guidance.
+        <p className="mb-3 text-sm text-text-2">
+          Upgrade to Pro to unlock compliance guidance.
         </p>
         <a
           href="/upgrade"
           onClick={() => trackEvent('ai_upgrade_clicked')}
-          className="inline-flex min-h-[44px] items-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
         >
-          Upgrade to Pro →
+          Upgrade to Pro &rarr;
         </a>
       </div>
     </div>

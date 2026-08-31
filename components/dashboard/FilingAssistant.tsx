@@ -52,19 +52,27 @@ export default function FilingAssistant({ trackedId }: Props) {
 
   const handleExpand = () => setExpanded(true)
 
-  // ── Collapsed header ──────────────────────────────────────────────────────
+  // ── Collapsed state ───────────────────────────────────────────────────────
   if (!expanded) {
     return (
-      <div className="mt-5 border-t border-gray-100 pt-4">
+      <div className="mt-4 border-t border-border-light pt-4">
         <button
           type="button"
           onClick={handleExpand}
-          className="flex w-full items-center justify-between text-left"
+          aria-expanded="false"
+          className="flex w-full min-h-[44px] items-center justify-between gap-3 rounded-[var(--button-radius)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
-          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            ✦ AI Filing Assistant
-          </span>
-          <span className="text-xs text-indigo-500">Prepare a filing ›</span>
+          <div className="flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-3" aria-hidden="true">
+              <rect x="3" y="2" width="10" height="12" rx="1" />
+              <path d="M6 5h4M6 8h4M6 11h2" />
+            </svg>
+            <div>
+              <p className="text-sm font-medium text-text-1">Filing Assistant</p>
+              <p className="hidden text-xs text-text-3 sm:block">Prepare for a Confirmation Statement or Annual Accounts filing.</p>
+            </div>
+          </div>
+          <span className="shrink-0 text-xs text-accent">Prepare &rsaquo;</span>
         </button>
       </div>
     )
@@ -74,10 +82,8 @@ export default function FilingAssistant({ trackedId }: Props) {
 
   // ── Expanded assistant ────────────────────────────────────────────────────
   return (
-    <div className="mt-5 border-t border-gray-100 pt-4">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-indigo-600">
-        ✦ AI Filing Assistant
-      </p>
+    <div className="mt-4 border-t border-border-light pt-4">
+      <p className="mb-3 text-sm font-medium text-text-1">Filing Assistant</p>
 
       {/* Filing type selector */}
       <div className="mb-3 flex flex-wrap gap-2">
@@ -87,10 +93,11 @@ export default function FilingAssistant({ trackedId }: Props) {
             type="button"
             onClick={() => fetchGuide(type)}
             disabled={loading}
-            className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+            aria-pressed={selectedType === type}
+            className={`min-h-[44px] rounded-[var(--button-radius)] border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed disabled:opacity-50 ${
               selectedType === type
-                ? 'border-indigo-600 bg-indigo-600 text-white'
-                : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                ? 'border-accent bg-accent text-accent-fg'
+                : 'border-border bg-ground text-text-2 hover:border-accent hover:text-accent'
             }`}
           >
             {label}
@@ -100,10 +107,10 @@ export default function FilingAssistant({ trackedId }: Props) {
 
       {/* Loading state */}
       {loading && (
-        <div className="mt-3 rounded-xl bg-indigo-50 p-4">
-          <div className="flex items-center gap-2 text-sm text-indigo-700">
+        <div className="mt-3 rounded-[var(--card-radius)] bg-ai-surface p-4">
+          <div className="flex items-center gap-2 text-sm text-text-2">
             <span
-              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent border-t-transparent motion-reduce:animate-none"
               aria-hidden="true"
             />
             Preparing your filing guide…
@@ -113,41 +120,44 @@ export default function FilingAssistant({ trackedId }: Props) {
 
       {/* Error */}
       {error && (
-        <p className="mt-3 text-sm text-red-600" role="alert">
+        <p className="mt-3 text-sm text-semantic-red-text" role="alert">
           {error}
         </p>
       )}
 
-      {/* Guide — overflow-anywhere handles long URLs in AI output */}
+      {/* Guide */}
       {guide && (
-        <div className="overflow-anywhere mt-3 rounded-xl bg-indigo-50 p-4">
+        <div className="overflow-anywhere mt-3 rounded-[var(--card-radius)] bg-ai-surface p-4">
           <AdvisorMarkdown content={guide} />
         </div>
       )}
 
-      {/* Official filing destinations — sourced from the guidance layer, never from AI output */}
+      {/* Official filing destinations */}
       {guidance && guide && (
-        <div className="mt-3 space-y-1">
-          <p className="text-xs font-semibold text-gray-600">File directly:</p>
+        <div className="mt-3 space-y-1.5">
+          <p className="text-xs font-medium text-text-2">File directly:</p>
           {guidance.officialDestinations.map((dest) => (
             <a
               key={dest.url}
               href={dest.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-xs text-indigo-600 underline hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 rounded"
+              className="flex min-h-[44px] items-center gap-1.5 rounded-[var(--button-radius)] text-xs text-accent underline transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
             >
               {dest.label}
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
+                <path d="M5 2h5v5M10 2L4.5 7.5" />
+              </svg>
             </a>
           ))}
-          <p className="pt-1 text-xs text-gray-400">
+          <p className="pt-1 text-xs text-text-3">
             Guidance reviewed: {guidance.lastReviewed} · Source: {guidance.sourceLabel}
           </p>
         </div>
       )}
 
-      {/* Hardcoded disclaimer — not AI-generated, not suppressible */}
-      <p className="mt-3 text-xs text-gray-400">
+      {/* Disclaimer */}
+      <p className="mt-3 text-xs text-text-3">
         ComplyHub does not file on your behalf. This guidance is for informational
         purposes only. Verify requirements directly with Companies House.
       </p>

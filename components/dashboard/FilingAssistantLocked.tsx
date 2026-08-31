@@ -11,19 +11,24 @@ export default function FilingAssistantLocked() {
     trackEvent('ai_upgrade_prompt_shown')
   }
 
-  // ── Collapsed header ──────────────────────────────────────────────────────
+  // ── Collapsed state ───────────────────────────────────────────────────────
   if (!expanded) {
     return (
-      <div className="mt-5 border-t border-gray-100 pt-4">
+      <div className="mt-4 border-t border-border-light pt-4">
         <button
           type="button"
           onClick={handleExpand}
-          className="flex w-full items-center justify-between text-left"
+          aria-expanded="false"
+          className="flex w-full min-h-[44px] items-center justify-between gap-3 rounded-[var(--button-radius)] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
-          <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            ✦ AI Filing Assistant
-          </span>
-          <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+          <div className="flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-text-3" aria-hidden="true">
+              <rect x="3" y="2" width="10" height="12" rx="1" />
+              <path d="M6 5h4M6 8h4M6 11h2" />
+            </svg>
+            <p className="text-sm font-medium text-text-1">Filing Assistant</p>
+          </div>
+          <span className="shrink-0 rounded-[var(--pill-radius)] bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
             Pro
           </span>
         </button>
@@ -33,35 +38,45 @@ export default function FilingAssistantLocked() {
 
   // ── Expanded locked panel ─────────────────────────────────────────────────
   return (
-    <div className="mt-5 border-t border-gray-100 pt-4">
+    <div className="mt-4 border-t border-border-light pt-4">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-          ✦ AI Filing Assistant
-        </p>
-        <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
-          Pro feature
+        <p className="text-sm font-medium text-text-1">Filing Assistant</p>
+        <span className="rounded-[var(--pill-radius)] bg-accent-muted px-2 py-0.5 text-xs font-medium text-accent">
+          Pro
         </span>
       </div>
 
-      <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-        <p className="mb-2 text-sm font-medium text-indigo-900">
-          Prepare your Companies House filings with AI guidance:
+      <div className="rounded-[var(--card-radius)] border border-border bg-ground p-4">
+        <p className="mb-2 text-sm font-medium text-text-1">
+          Prepare your Companies House filings:
         </p>
-        <ul className="mb-4 space-y-1 text-sm text-indigo-700">
-          <li>• Step-by-step preparation checklist</li>
-          <li>• What information you need to gather</li>
-          <li>• Official filing destinations with direct links</li>
-          <li>• Personalised to your company&apos;s current status and deadline</li>
+        <ul className="mb-3 space-y-1 text-sm text-text-2">
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Step-by-step preparation checklist
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            What information you need to gather
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Official filing destinations with direct links
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-text-3" aria-hidden="true" />
+            Personalised to your company&apos;s status and deadline
+          </li>
         </ul>
-        <p className="mb-4 text-sm text-indigo-700">
-          Upgrade to Pro to unlock the AI Filing Assistant.
+        <p className="mb-3 text-sm text-text-2">
+          Upgrade to Pro to unlock the Filing Assistant.
         </p>
         <a
           href="/upgrade"
           onClick={() => trackEvent('ai_upgrade_clicked')}
-          className="inline-flex min-h-[44px] items-center rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
         >
-          Upgrade to Pro →
+          Upgrade to Pro &rarr;
         </a>
       </div>
     </div>

@@ -48,6 +48,40 @@ export interface ReportData {
 }
 
 // ---------------------------------------------------------------------------
+// Filename helpers
+// ---------------------------------------------------------------------------
+
+export function sanitizeFilenameSegment(raw: string): string {
+  return raw
+    .trim()
+    .replace(/[\x00-\x1f\x7f]/g, '')
+    .replace(/[\/\\:*?"<>|]/g, '')
+    .replace(/\.{2,}/g, '.')
+    .replace(/\s+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^[.\-]+|[.\-]+$/g, '')
+    .slice(0, 80)
+    || 'Company'
+}
+
+function sanitizeDateSegment(dateStr: string): string {
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+    ? dateStr
+    : 'unknown-date'
+}
+
+export function buildReportFilename(companyName: string, dateStr: string): string {
+  return `${sanitizeFilenameSegment(companyName)}_Compliance-Report_${sanitizeDateSegment(dateStr)}.pdf`
+}
+
+export function buildContentDisposition(companyName: string, dateStr: string): string {
+  const filename = buildReportFilename(companyName, dateStr)
+  const asciiSafe = filename.replace(/[^\x20-\x7e]/g, '_')
+  const utf8Encoded = encodeURIComponent(filename)
+  return `attachment; filename="${asciiSafe}"; filename*=UTF-8''${utf8Encoded}`
+}
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -124,7 +158,7 @@ export function buildReportData(
       compliance.accounts.status === 'overdue'
     ) {
       actionsRequired.push(
-        `Accounts Filing: ${formatDaysLabel(
+        `Annual Accounts: ${formatDaysLabel(
           compliance.accounts.daysRemaining,
           compliance.accounts.status,
         )}`,

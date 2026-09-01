@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { fetchCompany } from '@/lib/companies-house/client'
 import { calculateCompliance } from '@/lib/compliance'
-import { buildReportData } from '@/lib/report'
+import { buildReportData, buildContentDisposition } from '@/lib/report'
 import { generateCompliancePDF } from '@/lib/pdf'
 
 export async function GET(
@@ -93,16 +93,14 @@ export async function GET(
   // Return PDF
   // -------------------------------------------------------------------------
   const dateStr = new Date().toISOString().slice(0, 10)
-  const filename = `complyhub-report-${tracked.company_number}-${dateStr}.pdf`
+  const disposition = buildContentDisposition(tracked.company_name, dateStr)
 
-  // Blob is unambiguously BodyInit; Content-Type is set on the Blob itself
-  // so the Response headers only need Disposition and Cache-Control.
   const blob = new Blob([pdfBuffer], { type: 'application/pdf' })
 
   return new Response(blob, {
     headers: {
       'Content-Type':        'application/pdf',
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': disposition,
       'Cache-Control':       'private, no-store',
     },
   })

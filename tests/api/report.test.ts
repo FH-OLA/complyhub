@@ -80,7 +80,7 @@ describe('GET /api/report/[trackedId]', () => {
     expect(res.status).toBe(200)
     expect(res.headers.get('Content-Type')).toBe('application/pdf')
     expect(res.headers.get('Content-Disposition')).toContain('attachment')
-    expect(res.headers.get('Content-Disposition')).toContain('12345678')
+    expect(res.headers.get('Content-Disposition')).toContain('Active-Test-Ltd')
   })
 
   it('sets Cache-Control to private, no-store', async () => {

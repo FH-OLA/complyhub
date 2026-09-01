@@ -10,10 +10,10 @@ import {
 import type { ReportData } from '@/lib/report'
 
 // ---------------------------------------------------------------------------
-// Colour palette (mirrors the app's Tailwind theme)
+// Colour palette — Counsel+ aligned, print-safe
 // ---------------------------------------------------------------------------
 const C = {
-  primary:      '#4f46e5',
+  accent:       '#4B6A8A',
   healthy:      '#059669',
   healthyBg:    '#f0fdf4',
   attention:    '#d97706',
@@ -26,26 +26,26 @@ const C = {
   textSub:      '#6b7280',
   textMuted:    '#9ca3af',
   border:       '#e5e7eb',
+  borderLight:  '#f3f4f6',
   bg:           '#f9fafb',
   white:        '#ffffff',
-  headerText:   'rgba(255,255,255,0.75)',
-  headerTitle:  '#ffffff',
 }
 
 type StatusKey = 'ok' | 'due_soon' | 'overdue' | 'not_applicable'
 type TierKey   = 'healthy' | 'attention' | 'action' | 'dissolved'
 
-const STATUS_COLOR: Record<StatusKey, string>   = { ok: C.healthy, due_soon: C.attention, overdue: C.action, not_applicable: C.dissolved }
-const STATUS_BG:    Record<StatusKey, string>   = { ok: C.healthyBg, due_soon: C.attentionBg, overdue: C.actionBg, not_applicable: C.dissolvedBg }
-const TIER_COLOR:   Record<TierKey, string>     = { healthy: C.healthy, attention: C.attention, action: C.action, dissolved: C.dissolved }
-const TIER_BG:      Record<TierKey, string>     = { healthy: C.healthyBg, attention: C.attentionBg, action: C.actionBg, dissolved: C.dissolvedBg }
-const TIER_LABEL:   Record<TierKey, string>     = {
-  healthy:    'Healthy',
-  attention:  'Attention needed',
-  action:     'Action required',
-  dissolved:  'Dissolved',
+const STATUS_COLOR: Record<StatusKey, string> = { ok: C.healthy, due_soon: C.attention, overdue: C.action, not_applicable: C.dissolved }
+const STATUS_BG:    Record<StatusKey, string> = { ok: C.healthyBg, due_soon: C.attentionBg, overdue: C.actionBg, not_applicable: C.dissolvedBg }
+const STATUS_LABEL: Record<StatusKey, string> = { ok: 'On track', due_soon: 'Due soon', overdue: 'Overdue', not_applicable: 'N/A' }
+const TIER_COLOR:   Record<TierKey, string>   = { healthy: C.healthy, attention: C.attention, action: C.action, dissolved: C.dissolved }
+const TIER_BG:      Record<TierKey, string>   = { healthy: C.healthyBg, attention: C.attentionBg, action: C.actionBg, dissolved: C.dissolvedBg }
+const TIER_LABEL:   Record<TierKey, string>   = {
+  healthy:   'Healthy',
+  attention: 'Attention needed',
+  action:    'Action required',
+  dissolved: 'Dissolved',
 }
-const TIER_DESC:    Record<TierKey, string>     = {
+const TIER_DESC: Record<TierKey, string> = {
   healthy:   'All compliance obligations are currently on track.',
   attention: 'One or more obligations are approaching their deadline.',
   action:    'Immediate action is required for one or more obligations.',
@@ -57,57 +57,42 @@ const TIER_DESC:    Record<TierKey, string>     = {
 // ---------------------------------------------------------------------------
 const s = StyleSheet.create({
   page: {
-    fontFamily:        'Helvetica',
-    backgroundColor:   C.white,
-    fontSize:          10,
-    color:             C.text,
-    paddingBottom:     40,
+    fontFamily:      'Helvetica',
+    backgroundColor: C.white,
+    fontSize:        10,
+    color:           C.text,
+    paddingBottom:   60,
   },
 
-  // Header
+  // Company-first header
   header: {
-    backgroundColor:   C.primary,
-    paddingVertical:   20,
+    paddingTop:        40,
     paddingHorizontal: 40,
+    paddingBottom:     20,
+    borderBottomWidth: 2,
+    borderBottomColor: C.accent,
+    borderBottomStyle: 'solid',
   },
-  headerRow: {
-    flexDirection:     'row',
-    justifyContent:    'space-between',
-    alignItems:        'center',
-    marginBottom:      8,
+  companyName: {
+    fontSize:      18,
+    fontFamily:    'Helvetica-Bold',
+    color:         C.text,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom:  4,
   },
-  headerBrand: {
-    flexDirection:     'row',
-    alignItems:        'center',
-  },
-  headerLogo: {
-    fontSize:          18,
-    fontFamily:        'Helvetica-Bold',
-    color:             C.headerTitle,
-    marginRight:       6,
-  },
-  headerBetaBadge: {
-    fontSize:          7,
-    fontFamily:        'Helvetica-Bold',
-    color:             C.headerText,
-    backgroundColor:   'rgba(255,255,255,0.15)',
-    paddingHorizontal: 5,
-    paddingVertical:   2,
-    borderRadius:      3,
-    letterSpacing:     0.5,
-  },
-  headerTitle: {
-    fontSize:          13,
-    fontFamily:        'Helvetica-Bold',
-    color:             C.headerTitle,
+  reportTitle: {
+    fontSize:     12,
+    color:        C.accent,
+    marginBottom: 10,
   },
   headerMeta: {
-    flexDirection:     'row',
-    justifyContent:    'space-between',
+    flexDirection: 'row',
+    gap:           20,
   },
   headerMetaText: {
-    fontSize:          8,
-    color:             C.headerText,
+    fontSize: 9,
+    color:    C.textSub,
   },
 
   // Body wrapper
@@ -121,34 +106,23 @@ const s = StyleSheet.create({
     marginBottom: 22,
   },
   sectionLabel: {
-    fontSize:        7,
-    fontFamily:      'Helvetica-Bold',
-    color:           C.textSub,
-    letterSpacing:   0.8,
-    textTransform:   'uppercase',
-    marginBottom:    8,
-    paddingBottom:   6,
+    fontSize:           7,
+    fontFamily:         'Helvetica-Bold',
+    color:              C.textSub,
+    letterSpacing:      0.8,
+    textTransform:      'uppercase',
+    marginBottom:       8,
+    paddingBottom:      6,
     borderBottomWidth:  1,
     borderBottomColor:  C.border,
-    borderBottomStyle: 'solid',
+    borderBottomStyle:  'solid',
   },
 
-  // Company section
-  companyName: {
-    fontSize:    20,
-    fontFamily:  'Helvetica-Bold',
-    color:       C.text,
-    marginBottom: 6,
-  },
+  // Company details
   companyMetaRow: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    marginBottom:   6,
-  },
-  companyNumber: {
-    fontSize:    10,
-    color:       C.textSub,
-    marginRight: 8,
+    flexDirection: 'row',
+    alignItems:    'center',
+    marginBottom:  6,
   },
   statusPill: {
     fontSize:          9,
@@ -196,20 +170,20 @@ const s = StyleSheet.create({
 
   // Compliance table
   tableHeaderRow: {
-    flexDirection:   'row',
-    backgroundColor: C.bg,
+    flexDirection:     'row',
+    backgroundColor:   C.bg,
     paddingVertical:   7,
     paddingHorizontal: 12,
-    borderRadius:    4,
-    marginBottom:    2,
+    borderRadius:      4,
+    marginBottom:      2,
   },
   tableDataRow: {
-    flexDirection:     'row',
-    paddingVertical:   10,
-    paddingHorizontal: 12,
+    flexDirection:      'row',
+    paddingVertical:    10,
+    paddingHorizontal:  12,
     borderBottomWidth:  1,
     borderBottomColor:  C.border,
-    borderBottomStyle: 'solid',
+    borderBottomStyle:  'solid',
   },
   colObligation: { flex: 2.4 },
   colStatus:     { flex: 2.2 },
@@ -227,9 +201,9 @@ const s = StyleSheet.create({
     color:    C.text,
   },
   tableCellSub: {
-    fontSize:   8,
-    color:      C.textMuted,
-    marginTop:  2,
+    fontSize:  8,
+    color:     C.textMuted,
+    marginTop: 2,
   },
   statusBadge: {
     fontSize:          8,
@@ -242,8 +216,8 @@ const s = StyleSheet.create({
 
   // Action summary
   allClearBox: {
-    backgroundColor: C.healthyBg,
-    borderRadius:    6,
+    backgroundColor:   C.healthyBg,
+    borderRadius:      6,
     paddingVertical:   10,
     paddingHorizontal: 12,
   },
@@ -253,9 +227,9 @@ const s = StyleSheet.create({
     color:      C.healthy,
   },
   actionRow: {
-    flexDirection:  'row',
-    marginBottom:   6,
-    alignItems:     'flex-start',
+    flexDirection: 'row',
+    marginBottom:  6,
+    alignItems:    'flex-start',
   },
   actionBullet: {
     fontSize:    9,
@@ -284,11 +258,55 @@ const s = StyleSheet.create({
     lineHeight: 1.6,
   },
 
+  // Brand signature
+  brandSignature: {
+    marginTop:          16,
+    paddingTop:         16,
+    borderTopWidth:     1,
+    borderTopColor:     C.border,
+    borderTopStyle:     'solid',
+    alignItems:         'center',
+    marginBottom:       16,
+  },
+  brandPrepared: {
+    fontSize: 8,
+    color:    C.textMuted,
+  },
+  brandName: {
+    fontSize:   11,
+    fontFamily: 'Helvetica-Bold',
+    color:      C.accent,
+    marginTop:  2,
+  },
+  brandTagline: {
+    fontSize:  8,
+    color:     C.textMuted,
+    marginTop: 1,
+  },
+
   // Disclaimer
   disclaimer: {
-    fontSize:   8,
+    fontSize:   7.5,
     color:      C.textMuted,
     lineHeight: 1.6,
+  },
+
+  // Fixed page footer
+  pageFooter: {
+    position:          'absolute',
+    bottom:            20,
+    left:              40,
+    right:             40,
+    flexDirection:     'row',
+    justifyContent:    'space-between',
+    borderTopWidth:    1,
+    borderTopColor:    C.borderLight,
+    borderTopStyle:    'solid',
+    paddingTop:        6,
+  },
+  footerText: {
+    fontSize: 7,
+    color:    C.textMuted,
   },
 })
 
@@ -302,9 +320,17 @@ function fmtDate(iso: string): string {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
+function fmtDateLong(iso: string): string {
+  if (!iso || iso === 'N/A') return '—'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
 function fmtStatusLabel(status: StatusKey, days: number): string {
-  if (status === 'ok')       return `Due in ${days} day${days !== 1 ? 's' : ''}`
-  if (status === 'overdue')  return `Overdue by ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''}`
+  if (status === 'not_applicable') return 'N/A'
+  if (status === 'ok')      return `Due in ${days} day${days !== 1 ? 's' : ''}`
+  if (status === 'overdue') return `Overdue by ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''}`
   return `Due in ${days} day${days !== 1 ? 's' : ''}`
 }
 
@@ -313,35 +339,31 @@ function fmtStatusLabel(status: StatusKey, days: number): string {
 // ---------------------------------------------------------------------------
 function ReportHeader({ data }: { data: ReportData }) {
   return (
-    <View style={s.header}>
-      <View style={s.headerRow}>
-        <View style={s.headerBrand}>
-          <Text style={s.headerLogo}>ComplyHub</Text>
-          <Text style={s.headerBetaBadge}>BETA</Text>
-        </View>
-        <Text style={s.headerTitle}>Compliance Report</Text>
-      </View>
+    <View style={s.header} fixed>
+      <Text style={s.companyName}>{data.company.name}</Text>
+      <Text style={s.reportTitle}>Company Compliance Report</Text>
       <View style={s.headerMeta}>
         <Text style={s.headerMetaText}>
-          {data.reportId}  |  Version {data.version}
+          Company number: {data.company.number}
         </Text>
         <Text style={s.headerMetaText}>
-          Generated: {fmtDate(data.generatedAt)}
+          Report date: {fmtDateLong(data.generatedAt)}
+        </Text>
+        <Text style={s.headerMetaText}>
+          {data.reportId}
         </Text>
       </View>
     </View>
   )
 }
 
-function CompanySection({ data }: { data: ReportData }) {
+function CompanyDetails({ data }: { data: ReportData }) {
   const { company } = data
   const isActive = company.status === 'active'
   return (
     <View style={s.section}>
-      <Text style={s.sectionLabel}>Company</Text>
-      <Text style={s.companyName}>{company.name}</Text>
+      <Text style={s.sectionLabel}>Company Details</Text>
       <View style={s.companyMetaRow}>
-        <Text style={s.companyNumber}>{company.number}</Text>
         <Text style={[
           s.statusPill,
           {
@@ -352,7 +374,7 @@ function CompanySection({ data }: { data: ReportData }) {
           {company.status}
         </Text>
         {company.type ? (
-          <Text style={[s.statusPill, { backgroundColor: '#f3f4f6', color: C.textSub }]}>
+          <Text style={[s.statusPill, { backgroundColor: C.borderLight, color: C.textSub }]}>
             {company.type}
           </Text>
         ) : null}
@@ -378,9 +400,9 @@ function CompanySection({ data }: { data: ReportData }) {
 
 function HealthScoreSection({ data }: { data: ReportData }) {
   const { compliance } = data
-  const tier       = compliance.healthTier as TierKey
-  const tierColor  = TIER_COLOR[tier]
-  const tierBg     = TIER_BG[tier]
+  const tier      = compliance.healthTier as TierKey
+  const tierColor = TIER_COLOR[tier]
+  const tierBg    = TIER_BG[tier]
   const isDissolved = tier === 'dissolved'
 
   return (
@@ -412,7 +434,6 @@ function ComplianceTable({ data }: { data: ReportData }) {
     <View style={s.section}>
       <Text style={s.sectionLabel}>Compliance Obligations</Text>
 
-      {/* Table header */}
       <View style={s.tableHeaderRow}>
         <View style={s.colObligation}>
           <Text style={s.tableHeaderCell}>Obligation</Text>
@@ -428,7 +449,6 @@ function ComplianceTable({ data }: { data: ReportData }) {
         </View>
       </View>
 
-      {/* Confirmation Statement row */}
       <View style={s.tableDataRow}>
         <View style={s.colObligation}>
           <Text style={s.tableCell}>Confirmation Statement</Text>
@@ -440,6 +460,9 @@ function ComplianceTable({ data }: { data: ReportData }) {
           }]}>
             {fmtStatusLabel(cs.status, cs.daysRemaining)}
           </Text>
+          <Text style={{ fontSize: 7, color: C.textMuted, marginTop: 2 }}>
+            {STATUS_LABEL[cs.status]}
+          </Text>
         </View>
         <View style={s.colDue}>
           <Text style={s.tableCell}>{fmtDate(cs.dueDate)}</Text>
@@ -449,10 +472,9 @@ function ComplianceTable({ data }: { data: ReportData }) {
         </View>
       </View>
 
-      {/* Accounts Filing row */}
       <View style={s.tableDataRow}>
         <View style={s.colObligation}>
-          <Text style={s.tableCell}>Accounts Filing</Text>
+          <Text style={s.tableCell}>Annual Accounts</Text>
           {acc.lastAccountsType ? (
             <Text style={s.tableCellSub}>{acc.lastAccountsType}</Text>
           ) : null}
@@ -463,6 +485,9 @@ function ComplianceTable({ data }: { data: ReportData }) {
             color:           STATUS_COLOR[acc.status],
           }]}>
             {fmtStatusLabel(acc.status, acc.daysRemaining)}
+          </Text>
+          <Text style={{ fontSize: 7, color: C.textMuted, marginTop: 2 }}>
+            {STATUS_LABEL[acc.status]}
           </Text>
         </View>
         <View style={s.colDue}>
@@ -511,7 +536,17 @@ function DataFreshnessNotice({ data }: { data: ReportData }) {
   )
 }
 
-function DisclaimerFooter({ data }: { data: ReportData }) {
+function BrandSignature() {
+  return (
+    <View style={s.brandSignature}>
+      <Text style={s.brandPrepared}>Prepared with</Text>
+      <Text style={s.brandName}>ComplyHub</Text>
+      <Text style={s.brandTagline}>Compliance intelligence for UK businesses</Text>
+    </View>
+  )
+}
+
+function DisclaimerSection({ data }: { data: ReportData }) {
   return (
     <Text style={s.disclaimer}>
       This report was generated by ComplyHub on {fmtDate(data.generatedAt)} (report ID: {data.reportId}) using publicly
@@ -522,13 +557,28 @@ function DisclaimerFooter({ data }: { data: ReportData }) {
   )
 }
 
+function PageFooter({ companyName, companyNumber }: { companyName: string; companyNumber: string }) {
+  return (
+    <View style={s.pageFooter} fixed render={({ pageNumber }: { pageNumber: number }) => (
+      <>
+        <Text style={s.footerText}>
+          {companyName}  ·  Company No. {companyNumber}
+        </Text>
+        <Text style={s.footerText}>
+          ComplyHub  ·  Page {pageNumber}
+        </Text>
+      </>
+    )} />
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Root document component
 // ---------------------------------------------------------------------------
 function ComplianceReport({ data }: { data: ReportData }) {
   return (
     <Document
-      title={`ComplyHub Compliance Report — ${data.company.name}`}
+      title={`${data.company.name} — Compliance Report`}
       author="ComplyHub"
       subject="Company Compliance Report"
       creator="ComplyHub"
@@ -537,13 +587,19 @@ function ComplianceReport({ data }: { data: ReportData }) {
         <ReportHeader data={data} />
 
         <View style={s.body}>
-          <CompanySection data={data} />
+          <CompanyDetails data={data} />
           <HealthScoreSection data={data} />
           <ComplianceTable data={data} />
           <ActionSummary data={data} />
           <DataFreshnessNotice data={data} />
-          <DisclaimerFooter data={data} />
+          <BrandSignature />
+          <DisclaimerSection data={data} />
         </View>
+
+        <PageFooter
+          companyName={data.company.name}
+          companyNumber={data.company.number}
+        />
       </Page>
     </Document>
   )
@@ -552,19 +608,7 @@ function ComplianceReport({ data }: { data: ReportData }) {
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
-
-/**
- * Renders a ReportData to a PDF ArrayBuffer server-side.
- * Pure function: ReportData → Promise<ArrayBuffer>.
- *
- * Returns a concrete ArrayBuffer (not the wider ArrayBufferLike) so callers
- * can pass it directly to new Blob([...]) and new Response() without
- * TypeScript complaints about SharedArrayBuffer compatibility.
- *
- * Safe to call from any Node.js context (API route, cron job, email delivery).
- */
 export async function generateCompliancePDF(data: ReportData): Promise<ArrayBuffer> {
   const buf = await (renderToBuffer(<ComplianceReport data={data} />) as Promise<Buffer>)
-  // .slice() on a Node.js Buffer always produces a new ArrayBuffer (not SharedArrayBuffer).
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer
 }

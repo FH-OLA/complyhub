@@ -55,7 +55,7 @@ describe('buildAdvisorContext', () => {
     const report = buildReportData(trackedRow, activeCompany, overdueCompliance)
     const context = buildAdvisorContext(report)
     expect(context).toContain('Confirmation Statement')
-    expect(context).toContain('Accounts Filing')
+    expect(context).toContain('Annual Accounts')
   })
 
   it('includes today\'s date matching the pinned test date', () => {

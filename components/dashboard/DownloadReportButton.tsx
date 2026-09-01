@@ -27,7 +27,7 @@ export default function DownloadReportButton({ trackedId }: Props) {
       // downloaded file is named consistently with what the API produces.
       const disposition = res.headers.get('content-disposition') ?? ''
       const match = disposition.match(/filename="([^"]+)"/)
-      const filename = match?.[1] ?? `complyhub-report-${trackedId}.pdf`
+      const filename = match?.[1] ?? `Compliance-Report-${trackedId}.pdf`
 
       const blob = await res.blob()
       const url  = URL.createObjectURL(blob)

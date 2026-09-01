@@ -10,6 +10,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle'
 
 interface NavbarProps {
   userEmail: string
+  onOpenFeedback?: () => void
 }
 
 const NAV_LINKS = [
@@ -18,7 +19,7 @@ const NAV_LINKS = [
   { href: '/settings',     label: 'Settings' },
 ] as const
 
-export default function Navbar({ userEmail }: NavbarProps) {
+export default function Navbar({ userEmail, onOpenFeedback }: NavbarProps) {
   const router   = useRouter()
   const pathname = usePathname()
 
@@ -151,7 +152,7 @@ export default function Navbar({ userEmail }: NavbarProps) {
             aria-expanded={drawerOpen}
             aria-controls="mobile-nav"
             aria-label="Open navigation"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-2 hover:bg-accent-muted focus:outline-none focus:ring-2 focus:ring-focus-ring md:hidden"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-2 hover:bg-accent-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring md:hidden"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -202,7 +203,7 @@ export default function Navbar({ userEmail }: NavbarProps) {
             type="button"
             onClick={closeDrawer}
             aria-label="Close navigation"
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-3 hover:bg-accent-muted focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-3 hover:bg-accent-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <path
@@ -222,6 +223,19 @@ export default function Navbar({ userEmail }: NavbarProps) {
               {label}
             </Link>
           ))}
+
+          {onOpenFeedback && (
+            <>
+              <div className="my-2 mx-3 h-px bg-border-light" />
+              <button
+                type="button"
+                onClick={() => { closeDrawer(); onOpenFeedback() }}
+                className="flex w-full min-h-[44px] items-center rounded-[var(--button-radius)] px-3 text-sm font-medium text-text-1 transition-colors hover:bg-accent-muted hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+              >
+                Feedback
+              </button>
+            </>
+          )}
         </nav>
 
         {/* Drawer footer — theme toggle + user info + sign out */}
@@ -234,7 +248,7 @@ export default function Navbar({ userEmail }: NavbarProps) {
           <button
             type="button"
             onClick={() => { closeDrawer(); handleSignOut() }}
-            className="flex w-full min-h-[44px] items-center rounded-[var(--button-radius)] px-3 text-sm font-medium text-text-1 hover:bg-accent-muted"
+            className="flex w-full min-h-[44px] items-center rounded-[var(--button-radius)] px-3 text-sm font-medium text-text-1 hover:bg-accent-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             Sign out
           </button>

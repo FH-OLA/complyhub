@@ -23,15 +23,15 @@ export default async function SuccessPage() {
   if (isProUser) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="font-display text-[28px] font-bold text-text-1 sm:text-3xl">
           You&apos;re now on ComplyHub Pro
         </h1>
-        <p className="mt-4 text-gray-600">
+        <p className="mt-4 text-text-2">
           You can now track unlimited companies and receive full compliance alerts.
         </p>
         <Link
           href="/my-companies"
-          className="mt-8 inline-block rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+          className="mt-8 inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-6 py-3 font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
         >
           Go to My Companies
         </Link>
@@ -42,13 +42,13 @@ export default async function SuccessPage() {
   // Webhook may not have fired yet — show a holding state rather than an error.
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-      <h1 className="text-3xl font-bold text-gray-900">Payment received</h1>
-      <p className="mt-4 text-gray-600">
+      <h1 className="font-display text-[28px] font-bold text-text-1 sm:text-3xl">Payment received</h1>
+      <p className="mt-4 text-text-2">
         Your account is being upgraded to Pro. This usually takes a few seconds.
       </p>
       <a
         href="/success"
-        className="mt-8 inline-block rounded-xl border border-indigo-300 px-6 py-3 font-semibold text-indigo-600 hover:bg-indigo-50"
+        className="mt-8 inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] border border-accent bg-surface px-6 py-3 font-semibold text-accent transition-colors hover:bg-accent-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
       >
         Refresh
       </a>

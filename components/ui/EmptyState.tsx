@@ -26,14 +26,14 @@ export default function EmptyState({ icon, heading, body, action }: EmptyStatePr
           {action.href ? (
             <Link
               href={action.href}
-              className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2"
+              className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2"
             >
               {action.label}
             </Link>
           ) : (
             <button
               onClick={action.onClick}
-              className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2"
+              className="inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2"
             >
               {action.label}
             </button>

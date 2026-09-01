@@ -216,14 +216,14 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
               <button
                 onClick={() => { setConfirmingRemove(false); setRemoveError('') }}
                 disabled={removing}
-                className="flex min-h-[44px] flex-1 items-center justify-center rounded-[var(--button-radius)] border border-border bg-surface text-sm text-text-2 transition-colors hover:bg-ground disabled:opacity-50"
+                className="flex min-h-[44px] flex-1 items-center justify-center rounded-[var(--button-radius)] border border-border bg-surface text-sm text-text-2 transition-colors hover:bg-ground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRemove}
                 disabled={removing}
-                className="flex min-h-[44px] flex-1 items-center justify-center rounded-[var(--button-radius)] border border-semantic-red bg-semantic-red-bg text-sm font-medium text-semantic-red-text transition-colors hover:opacity-90 disabled:opacity-50"
+                className="flex min-h-[44px] flex-1 items-center justify-center rounded-[var(--button-radius)] border border-semantic-red bg-semantic-red-bg text-sm font-medium text-semantic-red-text transition-colors hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50"
               >
                 {removing ? 'Removing...' : 'Confirm remove'}
               </button>
@@ -232,7 +232,7 @@ export default function TrackedCompanyCard({ trackedId, company, compliance, isP
         ) : (
           <button
             onClick={() => setConfirmingRemove(true)}
-            className="inline-flex min-h-[44px] items-center text-xs text-text-3 transition-colors hover:text-semantic-red-text"
+            className="inline-flex min-h-[44px] items-center text-xs text-text-3 transition-colors hover:text-semantic-red-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:rounded-[var(--button-radius)]"
           >
             Remove company
           </button>

@@ -127,7 +127,7 @@ export default async function MyCompaniesPage() {
           ) : (
             <a
               href="/dashboard"
-              className="flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover"
+              className="flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
             >
               + Track another company
             </a>
@@ -181,32 +181,32 @@ export default async function MyCompaniesPage() {
       {results.length > 0 && (
         <>
           {/* PORTFOLIO SUMMARY */}
-          <div className="mt-6 rounded-[var(--card-radius)] border border-border bg-surface p-5">
-            <div className="grid gap-6 sm:grid-cols-3">
-              <div className="flex items-start gap-3">
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-semantic-green" aria-hidden="true" />
-                <div>
-                  <p className="text-xs font-medium text-text-2">Healthy</p>
-                  <p className="text-xl font-semibold tabular-nums text-text-1">{healthCounts.healthy}</p>
-                  <p className="text-xs text-text-3">All deadlines on track</p>
+          <div className="mt-6 rounded-[var(--card-radius)] border border-border bg-surface p-4 sm:p-5">
+            <div className="grid grid-cols-3 gap-3 sm:gap-6">
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-start sm:gap-3">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-semantic-green sm:mt-1.5" aria-hidden="true" />
+                <div className="text-center sm:text-left">
+                  <p className="text-[11px] font-medium text-text-2 sm:text-xs">Healthy</p>
+                  <p className="text-lg font-semibold tabular-nums text-text-1 sm:text-xl">{healthCounts.healthy}</p>
+                  <p className="hidden text-xs text-text-3 sm:block">All deadlines on track</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-semantic-amber" aria-hidden="true" />
-                <div>
-                  <p className="text-xs font-medium text-text-2">Attention needed</p>
-                  <p className="text-xl font-semibold tabular-nums text-text-1">{healthCounts.attention}</p>
-                  <p className="text-xs text-text-3">Deadlines approaching</p>
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-start sm:gap-3">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-semantic-amber sm:mt-1.5" aria-hidden="true" />
+                <div className="text-center sm:text-left">
+                  <p className="text-[11px] font-medium text-text-2 sm:text-xs">Attention needed</p>
+                  <p className="text-lg font-semibold tabular-nums text-text-1 sm:text-xl">{healthCounts.attention}</p>
+                  <p className="hidden text-xs text-text-3 sm:block">Deadlines approaching</p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-semantic-red" aria-hidden="true" />
-                <div>
-                  <p className="text-xs font-medium text-text-2">Action required</p>
-                  <p className="text-xl font-semibold tabular-nums text-text-1">{healthCounts.action}</p>
-                  <p className="text-xs text-text-3">Overdue or urgent</p>
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-start sm:gap-3">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-semantic-red sm:mt-1.5" aria-hidden="true" />
+                <div className="text-center sm:text-left">
+                  <p className="text-[11px] font-medium text-text-2 sm:text-xs">Action required</p>
+                  <p className="text-lg font-semibold tabular-nums text-text-1 sm:text-xl">{healthCounts.action}</p>
+                  <p className="hidden text-xs text-text-3 sm:block">Overdue or urgent</p>
                 </div>
               </div>
             </div>

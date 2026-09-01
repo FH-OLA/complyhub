@@ -4,9 +4,13 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { trackEvent } from '@/lib/events'
 
-export default function FeedbackWidget() {
+interface FeedbackWidgetProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export default function FeedbackWidget({ open, onOpenChange }: FeedbackWidgetProps) {
   const pathname = usePathname()
-  const [open, setOpen] = useState(false)
   const [rating, setRating] = useState(0)
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -39,7 +43,7 @@ export default function FeedbackWidget() {
   }
 
   const handleClose = () => {
-    setOpen(false)
+    onOpenChange(false)
     setTimeout(() => {
       setSubmitted(false)
       setRating(0)
@@ -126,15 +130,11 @@ export default function FeedbackWidget() {
       )}
 
       <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-accent text-accent-fg shadow-lg hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1 sm:rounded-[var(--pill-radius)] sm:px-4"
+        onClick={() => onOpenChange(!open)}
+        className="hidden min-h-[44px] items-center justify-center rounded-[var(--pill-radius)] bg-accent px-4 text-accent-fg shadow-lg hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1 sm:flex"
         aria-label={open ? 'Close feedback' : 'Open feedback'}
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden" aria-hidden="true">
-          <path d="M2 13l2-2h8a2 2 0 002-2V5a2 2 0 00-2-2H6a2 2 0 00-2 2v6z" />
-          <path d="M8 16h4a2 2 0 002-2v-1" />
-        </svg>
-        <span className="hidden text-sm font-semibold sm:inline">Feedback</span>
+        <span className="text-sm font-semibold">Feedback</span>
       </button>
     </div>
   )

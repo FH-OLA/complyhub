@@ -1,9 +1,7 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import Navbar from '@/components/dashboard/Navbar'
-import FeedbackWidget from '@/components/beta/FeedbackWidget'
-import Container from '@/components/ui/Container'
+import AuthenticatedShell from '@/components/dashboard/AuthenticatedShell'
 
 export default async function MyCompaniesLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -18,10 +16,6 @@ export default async function MyCompaniesLayout({ children }: { children: React.
   }
 
   return (
-    <div className="min-h-screen bg-ground">
-      <Navbar userEmail={user.email ?? ''} />
-      <main><Container className="py-10">{children}</Container></main>
-      <FeedbackWidget />
-    </div>
+    <AuthenticatedShell userEmail={user.email ?? ''}>{children}</AuthenticatedShell>
   )
 }

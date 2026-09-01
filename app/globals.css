@@ -199,3 +199,16 @@ body {
 .overflow-anywhere {
   overflow-wrap: anywhere;
 }
+
+/* Bottom clearance for authenticated pages.
+   Mobile: no fixed trigger, just safe-area for notched devices.
+   Desktop (sm+): floating Feedback pill sits in margin outside the 960px
+   container, so 2.5rem (matching py-10) is sufficient. */
+.pb-feedback-clear {
+  padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 640px) {
+  .pb-feedback-clear {
+    padding-bottom: 2.5rem;
+  }
+}

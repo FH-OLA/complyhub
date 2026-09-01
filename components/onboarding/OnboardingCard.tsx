@@ -68,7 +68,7 @@ export default function OnboardingCard({
           onClick={handleDismiss}
           disabled={dismissing}
           aria-label="Dismiss onboarding guide"
-          className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-[var(--button-radius)] text-text-3 transition-colors hover:bg-ground hover:text-text-2 focus:outline-none focus:ring-2 focus:ring-focus-ring disabled:opacity-50"
+          className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-[var(--button-radius)] text-text-3 transition-colors hover:bg-ground hover:text-text-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
             <path d="M3 3l8 8M11 3l-8 8" />

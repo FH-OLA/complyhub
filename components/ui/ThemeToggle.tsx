@@ -72,7 +72,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={cycle}
-      className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-3 transition-colors hover:bg-accent-muted hover:text-text-1 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-ground"
+      className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[var(--button-radius)] text-text-3 transition-colors hover:bg-accent-muted hover:text-text-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ground"
       aria-label={labels[mode]}
     >
       {mode === 'light' && <SunIcon />}

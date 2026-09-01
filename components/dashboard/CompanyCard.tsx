@@ -127,7 +127,7 @@ export default function CompanyCard({ company, onTracked }: Props) {
           <p>{message}</p>
           <a
             href="/my-companies"
-            className="mt-1 inline-block font-semibold text-accent hover:underline"
+            className="mt-1 inline-flex min-h-[44px] items-center font-semibold text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:rounded-[var(--button-radius)]"
           >
             View in My Companies &rarr;
           </a>
@@ -148,7 +148,7 @@ export default function CompanyCard({ company, onTracked }: Props) {
           </p>
           <a
             href="/upgrade"
-            className="mt-3 inline-block rounded-[var(--button-radius)] bg-accent px-4 py-2 text-sm font-semibold text-accent-fg hover:bg-accent-hover"
+            className="mt-3 inline-flex min-h-[44px] items-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1"
           >
             Upgrade to Pro
           </a>
@@ -202,7 +202,7 @@ export default function CompanyCard({ company, onTracked }: Props) {
             setLoading(false)
           }
         }}
-        className={`mt-5 w-full rounded-[var(--button-radius)] py-2 min-h-[44px] font-medium transition-colors ${
+        className={`mt-5 w-full rounded-[var(--button-radius)] py-2 min-h-[44px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1 ${
           tracked || loading || checkingTracked
             ? 'cursor-not-allowed bg-accent text-accent-fg opacity-50'
             : 'bg-accent text-accent-fg hover:bg-accent-hover'

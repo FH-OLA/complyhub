@@ -30,25 +30,25 @@ export default function UpgradePage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center px-4 py-10 sm:py-16">
+    <div className="mx-auto flex min-h-[70vh] max-w-[960px] items-center px-4 py-10 sm:px-6 sm:py-16">
       <div className="grid w-full gap-8 md:grid-cols-2">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent">
             Upgrade to Pro
           </p>
 
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h1 className="mt-3 font-display text-[28px] font-bold text-text-1 sm:text-3xl">
             Never miss a compliance deadline again.
           </h1>
 
-          <p className="mt-4 text-base text-gray-600">{PLANS.pro.description}</p>
+          <p className="mt-4 text-base text-text-2">{PLANS.pro.description}</p>
 
-          <ul className="mt-8 space-y-3 text-sm text-gray-700">
+          <ul className="mt-8 space-y-3 text-sm text-text-2">
             {PLANS.pro.features.map((feature, i) => (
               <li key={feature}>
                 &#10003; {feature}
                 {i === 0 && (
-                  <span className="ml-2 rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">
+                  <span className="ml-2 rounded-[var(--pill-radius)] bg-accent px-2 py-0.5 text-xs font-semibold text-accent-fg">
                     PRO
                   </span>
                 )}
@@ -56,32 +56,32 @@ export default function UpgradePage() {
             ))}
           </ul>
 
-          <div className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="mt-6 rounded-[var(--card-radius)] bg-semantic-amber-bg p-4 text-sm text-semantic-amber-text">
             Missing a Companies House deadline can result in penalties and company strike-off.
           </div>
         </div>
 
-        <div className="rounded-2xl border-2 border-indigo-600 bg-white p-8 shadow-md">
-          <h2 className="text-xl font-semibold text-gray-900">ComplyHub {PLANS.pro.name}</h2>
+        <div className="rounded-[var(--card-radius)] border-2 border-accent bg-surface p-8">
+          <h2 className="text-xl font-semibold text-text-1">ComplyHub {PLANS.pro.name}</h2>
 
-          <p className="mt-2 text-3xl font-bold text-gray-900">
+          <p className="mt-2 text-3xl font-bold text-text-1">
             {PLANS.pro.price}
-            <span className="text-base font-medium text-gray-600">{PLANS.pro.period}</span>
+            <span className="text-base font-medium text-text-2">{PLANS.pro.period}</span>
           </p>
 
-          <p className="mt-4 text-sm text-gray-600">Cancel anytime. No hidden fees.</p>
+          <p className="mt-4 text-sm text-text-2">Cancel anytime. No hidden fees.</p>
 
           <button
             onClick={handleCheckout}
             disabled={loading}
-            className="mt-8 w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+            className="mt-8 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent px-4 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? 'Redirecting...' : 'Upgrade to Pro'}
           </button>
 
-          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+          {error && <p className="mt-4 text-sm text-semantic-red-text">{error}</p>}
 
-          <p className="mt-4 text-xs text-gray-400">Secure checkout powered by Stripe.</p>
+          <p className="mt-4 text-xs text-text-3">Secure checkout powered by Stripe.</p>
         </div>
       </div>
     </div>

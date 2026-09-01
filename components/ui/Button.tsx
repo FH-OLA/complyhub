@@ -30,7 +30,7 @@ export default function Button({
   return (
     <button
       disabled={disabled || loading}
-      className={`inline-flex min-h-[44px] items-center justify-center rounded-[var(--button-radius)] font-medium transition-colors active:scale-95 focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 focus:ring-offset-ground disabled:cursor-not-allowed disabled:active:scale-100 ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`inline-flex min-h-[44px] items-center justify-center rounded-[var(--button-radius)] font-medium transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:ring-offset-ground disabled:cursor-not-allowed disabled:active:scale-100 ${variants[variant]} ${sizes[size]} ${className}`}
       {...props}
     >
       {loading ? <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : null}

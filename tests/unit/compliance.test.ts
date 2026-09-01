@@ -29,10 +29,10 @@ describe('dissolved company', () => {
     expect(result.accounts.dueDate).toBe('N/A')
   })
 
-  it('returns overdue status for both obligations (sentinel, not real)', () => {
+  it('returns not_applicable status for both obligations', () => {
     const result = calculateCompliance(dissolvedCompany)
-    expect(result.confirmationStatement.status).toBe('overdue')
-    expect(result.accounts.status).toBe('overdue')
+    expect(result.confirmationStatement.status).toBe('not_applicable')
+    expect(result.accounts.status).toBe('not_applicable')
   })
 
   it('returns 0 daysRemaining for both obligations', () => {

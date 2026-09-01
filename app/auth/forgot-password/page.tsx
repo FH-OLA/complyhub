@@ -19,14 +19,11 @@ export default function ForgotPasswordPage() {
 
     const supabase = createClient()
 
-    // redirectTo carries next=/auth/reset-password so the callback knows
-    // to send the user to the password-reset form after the code is exchanged.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=/auth/reset-password`,
     })
 
     if (error) {
-      // Do not reveal whether the email exists — show a generic message.
       setError('Something went wrong. Please try again.')
     } else {
       setSent(true)
@@ -41,11 +38,14 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-ground px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Reset your password</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <Link href="/" className="font-display text-xl font-bold text-accent">
+            ComplyHub
+          </Link>
+          <h1 className="mt-4 text-2xl font-bold text-text-1">Reset your password</h1>
+          <p className="mt-2 text-sm text-text-2">
             Enter your email and we&apos;ll send you a reset link.
           </p>
         </div>
@@ -53,15 +53,15 @@ export default function ForgotPasswordPage() {
         <Card>
           {sent ? (
             <div className="text-center">
-              <p className="rounded-lg bg-green-50 px-3 py-4 text-sm text-green-700">
+              <p className="rounded-[var(--button-radius)] bg-semantic-green-bg px-3 py-4 text-sm text-semantic-green-text">
                 Check your email for a password reset link.
               </p>
-              <p className="mt-4 text-sm text-gray-500">
+              <p className="mt-4 text-sm text-text-3">
                 Didn&apos;t receive it?{' '}
                 <button
                   onClick={sendReset}
                   disabled={loading}
-                  className="font-medium text-indigo-600 hover:text-indigo-500 disabled:opacity-50"
+                  className="font-medium text-accent hover:text-accent-hover disabled:opacity-50"
                 >
                   {loading ? 'Sending…' : 'Send again'}
                 </button>
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
               />
 
               {error && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+                <p role="alert" className="rounded-[var(--button-radius)] bg-semantic-red-bg px-3 py-2 text-sm text-semantic-red-text">{error}</p>
               )}
 
               <Button type="submit" loading={loading} className="w-full mt-2">
@@ -90,9 +90,9 @@ export default function ForgotPasswordPage() {
           )}
         </Card>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-text-2">
           Remember your password?{' '}
-          <Link href="/auth/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link href="/auth/login" className="font-medium text-accent hover:text-accent-hover">
             Sign in
           </Link>
         </p>

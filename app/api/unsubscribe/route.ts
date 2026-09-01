@@ -19,7 +19,7 @@ function confirmationHtml(message: string, isError = false): string {
     <p style="margin:0 0 24px;font-size:14px;color:${colour};font-weight:600;">${message}</p>
     <p style="margin:0;font-size:14px;color:#6b7280;">
       You can manage your email preferences at any time from your
-      <a href="${SETTINGS_URL}" style="color:#4f46e5;text-decoration:underline;">account settings</a>.
+      <a href="${SETTINGS_URL}" style="color:#4B6A8A;text-decoration:underline;">account settings</a>.
     </p>
   </div>
 </body>

@@ -1,5 +1,5 @@
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
-import type { ComplianceResult } from '@/lib/compliance'
+import type { ComplianceResult, ComplianceStatus } from '@/lib/compliance'
 import { calculateHealthScore, getCompanyHealthTier, type HealthTier } from '@/lib/health-score'
 
 // ---------------------------------------------------------------------------
@@ -29,13 +29,13 @@ export interface ReportData {
     healthScore: number  // 0–100; meaningful only when status !== "dissolved"
     healthTier: HealthTier
     confirmationStatement: {
-      status: 'ok' | 'due_soon' | 'overdue'
+      status: ComplianceStatus
       daysRemaining: number
       dueDate: string
       lastFiled: string  // empty string if unknown
     }
     accounts: {
-      status: 'ok' | 'due_soon' | 'overdue'
+      status: ComplianceStatus
       daysRemaining: number
       dueDate: string
       lastFiled: string

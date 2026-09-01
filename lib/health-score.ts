@@ -1,4 +1,4 @@
-import type { ComplianceResult } from '@/lib/compliance'
+import type { ComplianceResult, ComplianceStatus } from '@/lib/compliance'
 
 export type HealthTier = 'healthy' | 'attention' | 'action' | 'dissolved'
 
@@ -11,8 +11,9 @@ export const HEALTH_TIER_CONFIG: Record<HealthTier, { label: string; badge: stri
 
 function obligationPenalty(
   daysRemaining: number,
-  status: 'ok' | 'due_soon' | 'overdue',
+  status: ComplianceStatus,
 ): number {
+  if (status === 'not_applicable') return 0
   if (status === 'overdue') return 50
   if (daysRemaining <= 7) return 25
   if (daysRemaining <= 14) return 15

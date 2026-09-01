@@ -32,11 +32,11 @@ const C = {
   headerTitle:  '#ffffff',
 }
 
-type StatusKey = 'ok' | 'due_soon' | 'overdue'
+type StatusKey = 'ok' | 'due_soon' | 'overdue' | 'not_applicable'
 type TierKey   = 'healthy' | 'attention' | 'action' | 'dissolved'
 
-const STATUS_COLOR: Record<StatusKey, string>   = { ok: C.healthy, due_soon: C.attention, overdue: C.action }
-const STATUS_BG:    Record<StatusKey, string>   = { ok: C.healthyBg, due_soon: C.attentionBg, overdue: C.actionBg }
+const STATUS_COLOR: Record<StatusKey, string>   = { ok: C.healthy, due_soon: C.attention, overdue: C.action, not_applicable: C.dissolved }
+const STATUS_BG:    Record<StatusKey, string>   = { ok: C.healthyBg, due_soon: C.attentionBg, overdue: C.actionBg, not_applicable: C.dissolvedBg }
 const TIER_COLOR:   Record<TierKey, string>     = { healthy: C.healthy, attention: C.attention, action: C.action, dissolved: C.dissolved }
 const TIER_BG:      Record<TierKey, string>     = { healthy: C.healthyBg, attention: C.attentionBg, action: C.actionBg, dissolved: C.dissolvedBg }
 const TIER_LABEL:   Record<TierKey, string>     = {

@@ -80,7 +80,7 @@ export default function LandingPage() {
                   href="/auth/signup"
                   className="mt-6 flex min-h-[44px] w-full items-center justify-center rounded-[var(--button-radius)] bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-hover"
                 >
-                  Start Pro trial
+                  Upgrade to Pro
                 </Link>
               </div>
             </div>

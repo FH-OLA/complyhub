@@ -10,20 +10,15 @@ import Card from '@/components/ui/Card'
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
-  // Destination to redirect to after a successful login.
-  // Must be a local path; anything else falls back to /dashboard.
   next?: string
-  // Error code forwarded from /auth/callback via ?error= query param.
   callbackError?: string
 }
 
-// Map callback error codes to user-facing messages.
 const CALLBACK_ERROR_MESSAGES: Record<string, string> = {
   missing_code: 'The sign-in link is incomplete. Please request a new one.',
   link_invalid: 'This link has expired or has already been used. Please request a new one.',
 }
 
-// Validate that a redirect target is a local path to prevent open redirects.
 function safeRedirect(value: string | undefined): string {
   if (!value) return '/dashboard'
   if (value.startsWith('/') && !value.startsWith('//')) return value
@@ -37,7 +32,6 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Signup-specific state
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
   const [resending, setResending] = useState(false)
   const [resentMessage, setResentMessage] = useState('')
@@ -70,11 +64,9 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
       if (error) {
         setError(error.message)
       } else if (data.session) {
-        // Email confirmation is disabled in Supabase — user is already authenticated.
         router.push('/dashboard')
         router.refresh()
       } else {
-        // Email confirmation is required — show the confirmation prompt.
         setAwaitingConfirmation(true)
       }
     }
@@ -92,13 +84,16 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-ground px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <Link href="/" className="font-display text-xl font-bold text-accent">
+            ComplyHub
+          </Link>
+          <h1 className="mt-4 text-2xl font-bold text-text-1">
             {isLogin ? 'Welcome back' : 'Create your account'}
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-text-2">
             {isLogin
               ? 'Sign in to your ComplyHub account'
               : 'Start monitoring your compliance today'}
@@ -107,23 +102,22 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
 
         <Card>
           {awaitingConfirmation ? (
-            // Post-signup state: waiting for the user to confirm their email.
             <div className="text-center">
-              <p className="rounded-lg bg-green-50 px-3 py-4 text-sm text-green-700">
+              <p className="rounded-[var(--button-radius)] bg-semantic-green-bg px-3 py-4 text-sm text-semantic-green-text">
                 Check your email to confirm your account.
               </p>
-              <p className="mt-4 text-sm text-gray-500">
+              <p className="mt-4 text-sm text-text-3">
                 Didn&apos;t receive it?{' '}
                 <button
                   onClick={handleResend}
                   disabled={resending}
-                  className="font-medium text-indigo-600 hover:text-indigo-500 disabled:opacity-50"
+                  className="font-medium text-accent hover:text-accent-hover disabled:opacity-50"
                 >
                   {resending ? 'Sending…' : 'Resend email'}
                 </button>
               </p>
               {resentMessage && (
-                <p className="mt-2 text-sm text-gray-600">{resentMessage}</p>
+                <p className="mt-2 text-sm text-text-2">{resentMessage}</p>
               )}
             </div>
           ) : (
@@ -138,7 +132,6 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
                 required
               />
 
-              {/* Password field with forgot-password link for login mode */}
               <div>
                 <Input
                   id="password"
@@ -154,7 +147,7 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
                   <div className="mt-1 text-right">
                     <Link
                       href="/auth/forgot-password"
-                      className="text-xs text-indigo-600 hover:text-indigo-500"
+                      className="text-xs text-accent hover:text-accent-hover"
                     >
                       Forgot password?
                     </Link>
@@ -162,40 +155,40 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
                 )}
               </div>
 
-              {/* Error from /auth/callback (e.g. expired confirmation link) */}
               {callbackErrorMessage && (
-                <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+                <p role="alert" className="rounded-[var(--button-radius)] bg-semantic-amber-bg px-3 py-2 text-sm text-semantic-amber-text">
                   {callbackErrorMessage}
                 </p>
               )}
 
-              {/* Error from the sign-in or sign-up call */}
               {error && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+                <p role="alert" className="rounded-[var(--button-radius)] bg-semantic-red-bg px-3 py-2 text-sm text-semantic-red-text">{error}</p>
               )}
 
-              {/* Terms and Privacy acceptance — required for signup only */}
               {!isLogin && (
-                <div className="flex items-start gap-2">
+                <label
+                  htmlFor="tos"
+                  className="flex min-h-[44px] cursor-pointer items-start gap-3 rounded-[var(--button-radius)] px-1 py-2 -mx-1 text-sm text-text-2"
+                >
                   <input
                     id="tos"
                     type="checkbox"
                     checked={tosChecked}
                     onChange={(e) => setTosChecked(e.target.checked)}
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-border accent-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
                   />
-                  <label htmlFor="tos" className="text-sm text-gray-600">
+                  <span>
                     I agree to the{' '}
-                    <Link href="/terms" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    <Link href="/terms" className="font-medium text-accent hover:text-accent-hover">
                       Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link href="/privacy" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    <Link href="/privacy" className="font-medium text-accent hover:text-accent-hover">
                       Privacy Policy
                     </Link>
                     .
-                  </label>
-                </div>
+                  </span>
+                </label>
               )}
 
               <Button
@@ -210,13 +203,13 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
           )}
         </Card>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
+        <p className="mt-6 text-center text-sm text-text-2">
           {isLogin ? (
             <>
               Don&apos;t have an account?{' '}
               <Link
                 href="/auth/signup"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="font-medium text-accent hover:text-accent-hover"
               >
                 Sign up
               </Link>
@@ -226,7 +219,7 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
               Already have an account?{' '}
               <Link
                 href="/auth/login"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="font-medium text-accent hover:text-accent-hover"
               >
                 Sign in
               </Link>

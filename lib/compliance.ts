@@ -1,14 +1,16 @@
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 
+export type ComplianceStatus = 'ok' | 'due_soon' | 'overdue' | 'not_applicable'
+
 export interface ComplianceResult {
   confirmationStatement: {
     dueDate: string
-    status: 'ok' | 'due_soon' | 'overdue'
+    status: ComplianceStatus
     daysRemaining: number
   }
   accounts: {
     dueDate: string
-    status: 'ok' | 'due_soon' | 'overdue'
+    status: ComplianceStatus
     daysRemaining: number
   }
 }
@@ -33,17 +35,16 @@ function diffInDays(date: Date): number {
 
 // ✅ Main function
 export function calculateCompliance(data: CompaniesHouseCompany): ComplianceResult {
-  // 🚨 Handle dissolved companies
   if (data.company_status === 'dissolved') {
     return {
       confirmationStatement: {
         dueDate: 'N/A',
-        status: 'overdue',
+        status: 'not_applicable',
         daysRemaining: 0,
       },
       accounts: {
         dueDate: 'N/A',
-        status: 'overdue',
+        status: 'not_applicable',
         daysRemaining: 0,
       },
     }

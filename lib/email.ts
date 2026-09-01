@@ -194,7 +194,7 @@ export function buildReminderEmail(options: ReminderEmailOptions): {
 
               <div style="margin-top:28px;">
                 <a href="${dashboardUrl}"
-                   style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+                   style="display:inline-block;padding:12px 24px;background:#4B6A8A;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
                   View My Companies &rarr;
                 </a>
               </div>

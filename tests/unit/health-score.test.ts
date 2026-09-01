@@ -5,6 +5,7 @@ import {
   overdueCompliance,
   attentionCompliance,
   mixedCompliance,
+  dissolvedCompliance,
 } from '../helpers/fixtures'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -29,6 +30,10 @@ describe('calculateHealthScore', () => {
   it('returns 50 when one obligation is overdue and the other is ok', () => {
     // mixedCompliance: CS overdue → 50 penalty, accounts ok → 0 → 100 - 50 = 50
     expect(calculateHealthScore(mixedCompliance)).toBe(50)
+  })
+
+  it('returns 100 for not_applicable obligations (dissolved companies)', () => {
+    expect(calculateHealthScore(dissolvedCompliance)).toBe(100)
   })
 
   it('applies 25-point penalty when daysRemaining <= 7', () => {
@@ -68,6 +73,7 @@ describe('getHealthTier', () => {
 
 describe('getCompanyHealthTier', () => {
   it('returns dissolved for dissolved companies regardless of compliance', () => {
+    expect(getCompanyHealthTier('dissolved', dissolvedCompliance)).toBe('dissolved')
     expect(getCompanyHealthTier('dissolved', healthyCompliance)).toBe('dissolved')
     expect(getCompanyHealthTier('dissolved', overdueCompliance)).toBe('dissolved')
   })

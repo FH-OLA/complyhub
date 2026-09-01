@@ -7,6 +7,7 @@ import {
   healthyCompliance,
   overdueCompliance,
   attentionCompliance,
+  dissolvedCompliance,
   trackedRow,
 } from '../helpers/fixtures'
 
@@ -76,7 +77,7 @@ describe('buildReportData — compliance section', () => {
   })
 
   it('sets healthTier to dissolved for dissolved companies', () => {
-    const report = buildReportData(trackedRow, dissolvedCompany, overdueCompliance)
+    const report = buildReportData(trackedRow, dissolvedCompany, dissolvedCompliance)
     expect(report.compliance.healthTier).toBe('dissolved')
   })
 
@@ -116,7 +117,7 @@ describe('buildReportData — actionsRequired', () => {
   })
 
   it('returns empty array for dissolved companies', () => {
-    const report = buildReportData(trackedRow, dissolvedCompany, overdueCompliance)
+    const report = buildReportData(trackedRow, dissolvedCompany, dissolvedCompliance)
     expect(report.actionsRequired).toHaveLength(0)
   })
 })

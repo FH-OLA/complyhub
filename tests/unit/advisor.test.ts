@@ -8,6 +8,7 @@ import {
   healthyCompliance,
   overdueCompliance,
   attentionCompliance,
+  dissolvedCompliance,
   trackedRow,
 } from '../helpers/fixtures'
 
@@ -84,7 +85,7 @@ describe('buildSystemPrompt', () => {
   })
 
   it('contains the STRICT RULES section', () => {
-    const report  = buildReportData(trackedRow, dissolvedCompany, overdueCompliance)
+    const report  = buildReportData(trackedRow, dissolvedCompany, dissolvedCompliance)
     const context = buildAdvisorContext(report)
     const prompt  = buildSystemPrompt(context)
     expect(prompt).toContain('STRICT RULES')

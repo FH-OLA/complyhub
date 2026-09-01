@@ -42,15 +42,16 @@ function ComplianceRow({
   lastFiled,
 }: {
   label: string
-  status: 'ok' | 'due_soon' | 'overdue'
+  status: 'ok' | 'due_soon' | 'overdue' | 'not_applicable'
   daysRemaining: number
   dueDate: string
   lastFiled: string
 }) {
-  const statusStyles = {
+  const statusStyles: Record<string, string> = {
     ok: 'bg-semantic-green-bg text-semantic-green-text',
     due_soon: 'bg-semantic-amber-bg text-semantic-amber-text',
     overdue: 'bg-semantic-red-bg text-semantic-red-text',
+    not_applicable: 'bg-ground text-text-3',
   }
 
   const statusLabel =

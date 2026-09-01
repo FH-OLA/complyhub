@@ -13,6 +13,7 @@ const VALID_EVENT_TYPES = new Set([
   'ai_advisor_opened',
   'ai_upgrade_prompt_shown',
   'ai_upgrade_clicked',
+  'ai_filing_opened',
 ])
 
 export async function POST(request: NextRequest) {

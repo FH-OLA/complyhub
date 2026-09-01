@@ -114,6 +114,12 @@ export const attentionCompliance: ComplianceResult = {
   accounts:              { dueDate: '2026-01-20T00:00:00.000Z', status: 'due_soon', daysRemaining: 19 },
 }
 
+/** Dissolved: both obligations not_applicable — no filing requirements. */
+export const dissolvedCompliance: ComplianceResult = {
+  confirmationStatement: { dueDate: 'N/A', status: 'not_applicable', daysRemaining: 0 },
+  accounts:              { dueDate: 'N/A', status: 'not_applicable', daysRemaining: 0 },
+}
+
 /** Mixed: CS overdue, accounts ok — single obligation overdue. */
 export const mixedCompliance: ComplianceResult = {
   confirmationStatement: { dueDate: '2025-06-01T00:00:00.000Z', status: 'overdue',  daysRemaining: -214 },

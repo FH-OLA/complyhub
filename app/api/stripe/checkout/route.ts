@@ -27,7 +27,7 @@ export async function POST() {
 
     const { data: existingSub } = await supabase
       .from('user_subscriptions')
-      .select('plan, status')
+      .select('plan, status, stripe_customer_id')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -35,9 +35,14 @@ export async function POST() {
       return NextResponse.json({ error: 'Already subscribed to Pro' }, { status: 409 })
     }
 
+    const customerParam: { customer: string } | { customer_email: string } =
+      existingSub?.stripe_customer_id
+        ? { customer: existingSub.stripe_customer_id }
+        : { customer_email: user.email }
+
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      customer_email: user.email,
+      ...customerParam,
       line_items: [
         {
           price: process.env.STRIPE_PRICE_ID,

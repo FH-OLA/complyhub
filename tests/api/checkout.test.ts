@@ -16,6 +16,10 @@ vi.mock('stripe', () => {
   return { default: vi.fn(() => mockStripe) }
 })
 
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+}))
+
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 import { POST } from '@/app/api/stripe/checkout/route'

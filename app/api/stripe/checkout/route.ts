@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { captureStripeError } from '@/lib/monitoring'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -60,6 +61,10 @@ export async function POST() {
     return NextResponse.json({ url: session.url })
   } catch (error) {
     console.error('Stripe checkout error:', error)
+    captureStripeError(error, {
+      subsystem: 'stripe',
+      operation: 'checkout-session-create',
+    })
     return NextResponse.json({ error: 'Stripe error' }, { status: 500 })
   }
 }

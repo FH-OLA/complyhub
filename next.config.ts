@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -19,6 +20,16 @@ const nextConfig: NextConfig = {
         connectSrc += ` https://${host} wss://${host}`
       } catch {
         // Malformed URL — fall back to 'self' only.
+      }
+    }
+
+    const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN ?? ''
+    if (sentryDsn) {
+      try {
+        const { host } = new URL(sentryDsn)
+        connectSrc += ` https://${host}`
+      } catch {
+        // Absent or malformed DSN — no Sentry CSP entry.
       }
     }
 
@@ -70,4 +81,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: 'complyhub',
+  project: 'complyhub',
+  silent: !process.env.CI,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+});

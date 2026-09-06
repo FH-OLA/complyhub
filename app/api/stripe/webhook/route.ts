@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { captureStripeError } from '@/lib/monitoring'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -54,6 +55,11 @@ export async function POST(req: Request) {
       error: idempotencyError.message,
       code: idempotencyError.code,
     })
+    captureStripeError(idempotencyError, {
+      subsystem: 'stripe',
+      operation: 'webhook-idempotency-gate',
+      stripe_event_type: event.type,
+    }, { stripe_event_id: event.id })
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 },
@@ -94,6 +100,11 @@ export async function POST(req: Request) {
           error: upsertError.message,
           code: upsertError.code,
         })
+        captureStripeError(upsertError, {
+          subsystem: 'stripe',
+          operation: 'webhook-checkout-upsert',
+          stripe_event_type: 'checkout.session.completed',
+        }, { stripe_event_id: event.id })
         mutationFailed = true
       }
     } else {
@@ -105,6 +116,11 @@ export async function POST(req: Request) {
         hasCustomer: !!customerId,
         hasSubscription: !!subscriptionId,
       })
+      captureStripeError(new Error('checkout.session.completed missing metadata.user_id'), {
+        subsystem: 'stripe',
+        operation: 'webhook-missing-metadata',
+        stripe_event_type: 'checkout.session.completed',
+      }, { stripe_event_id: event.id })
     }
   }
 
@@ -126,6 +142,11 @@ export async function POST(req: Request) {
         error: updateError.message,
         code: updateError.code,
       })
+      captureStripeError(updateError, {
+        subsystem: 'stripe',
+        operation: 'webhook-subscription-updated',
+        stripe_event_type: 'customer.subscription.updated',
+      }, { stripe_event_id: event.id })
       mutationFailed = true
     }
   }
@@ -149,6 +170,11 @@ export async function POST(req: Request) {
         error: deleteError.message,
         code: deleteError.code,
       })
+      captureStripeError(deleteError, {
+        subsystem: 'stripe',
+        operation: 'webhook-subscription-deleted',
+        stripe_event_type: 'customer.subscription.deleted',
+      }, { stripe_event_id: event.id })
       mutationFailed = true
     }
   }
@@ -174,6 +200,11 @@ export async function POST(req: Request) {
           error: failedError.message,
           code: failedError.code,
         })
+        captureStripeError(failedError, {
+          subsystem: 'stripe',
+          operation: 'webhook-invoice-payment-failed',
+          stripe_event_type: 'invoice.payment_failed',
+        }, { stripe_event_id: event.id })
         mutationFailed = true
       }
     }
@@ -195,6 +226,11 @@ export async function POST(req: Request) {
           error: cleanupError.message,
           code: cleanupError.code,
         })
+        captureStripeError(cleanupError, {
+          subsystem: 'stripe',
+          operation: 'webhook-idempotency-cleanup-critical',
+          stripe_event_type: event.type,
+        }, { stripe_event_id: event.id })
       }
     }
     return NextResponse.json(

@@ -20,10 +20,17 @@ vi.mock('stripe', () => {
   return { default: vi.fn(() => mockStripe) }
 })
 
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+}))
+
 import { headers } from 'next/headers'
 import Stripe from 'stripe'
+import * as Sentry from '@sentry/nextjs'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { POST } from '@/app/api/stripe/webhook/route'
+
+const mockedSentryCapture = vi.mocked(Sentry.captureException)
 
 const mockedHeaders      = vi.mocked(headers)
 const mockedCreateAdmin  = vi.mocked(createAdminClient)
@@ -93,6 +100,12 @@ describe('POST /api/stripe/webhook', () => {
         eventType: 'customer.subscription.updated',
         error: 'connection timeout',
         code: '57014',
+      }),
+    )
+    expect(mockedSentryCapture).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'connection timeout' }),
+      expect.objectContaining({
+        tags: expect.objectContaining({ operation: 'webhook-idempotency-gate' }),
       }),
     )
     errorSpy.mockRestore()
@@ -247,6 +260,12 @@ describe('POST /api/stripe/webhook', () => {
         hasSubscription: true,
       }),
     )
+    expect(mockedSentryCapture).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        tags: expect.objectContaining({ operation: 'webhook-missing-metadata' }),
+      }),
+    )
     errorSpy.mockRestore()
   })
 
@@ -283,6 +302,12 @@ describe('POST /api/stripe/webhook', () => {
     // Verify cleanup DELETE was issued on stripe_webhook_events
     const fromCalls = adminClient.from.mock.calls.map((c: unknown[]) => c[0])
     expect(fromCalls).toEqual(['stripe_webhook_events', 'user_subscriptions', 'stripe_webhook_events'])
+    expect(mockedSentryCapture).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'connection error' }),
+      expect.objectContaining({
+        tags: expect.objectContaining({ operation: 'webhook-checkout-upsert' }),
+      }),
+    )
     errorSpy.mockRestore()
   })
 
@@ -401,6 +426,75 @@ describe('POST /api/stripe/webhook', () => {
         code: '57014',
       }),
     )
+    expect(mockedSentryCapture).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'cleanup timeout' }),
+      expect.objectContaining({
+        tags: expect.objectContaining({ operation: 'webhook-idempotency-cleanup-critical' }),
+      }),
+    )
+    errorSpy.mockRestore()
+  })
+
+  it('returns 200 on success path when Sentry capture throws (missing metadata)', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockedSentryCapture.mockImplementation(() => {
+      throw new Error('Sentry transport failure')
+    })
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_sentry_success',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          metadata: {},
+          customer: 'cus_abc',
+          subscription: 'sub_xyz',
+        },
+      },
+    })
+    // Idempotency insert succeeds
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+
+    const res = await POST(makeWebhookRequest())
+    // Success path returns 200 despite Sentry failure
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.received).toBe(true)
+    // No business mutation attempted (only idempotency insert)
+    expect(adminClient.from).toHaveBeenCalledTimes(1)
+    expect(adminClient.from).toHaveBeenCalledWith('stripe_webhook_events')
+    errorSpy.mockRestore()
+  })
+
+  it('completes webhook processing even when Sentry capture throws', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockedSentryCapture.mockImplementation(() => {
+      throw new Error('Sentry transport failure')
+    })
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_sentry_fail',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          metadata: { user_id: 'u1' },
+          customer: 'cus_abc',
+          subscription: 'sub_xyz',
+        },
+      },
+    })
+    // 1: idempotency insert succeeds
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    // 2: upsert fails
+    adminClient.from.mockReturnValueOnce(
+      makeQueryChain({ error: { message: 'db error', code: '08006' } }),
+    )
+    // 3: cleanup succeeds
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+
+    const res = await POST(makeWebhookRequest())
+    // Webhook still returns 500 for mutation failure despite Sentry throwing
+    expect(res.status).toBe(500)
     errorSpy.mockRestore()
   })
 

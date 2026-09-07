@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 import { fetchCompany } from '@/lib/companies-house/client'
 import { calculateCompliance } from '@/lib/compliance'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { captureError } from '@/lib/monitoring'
 import { buildReminderEmail, generateUnsubscribeToken, type AlertItem } from '@/lib/email'
 
 function shouldAlert(days: number) {
@@ -50,6 +51,12 @@ export async function GET(request: Request) {
     .select('id, user_id, company_name, company_number')
 
   if (companiesError) {
+    // Top-level abort: no company is processed and no reminder is sent. The
+    // cron is unattended, so without this the whole run fails silently.
+    captureError(companiesError, {
+      subsystem: 'alerts',
+      operation: 'daily_alert_cron',
+    })
     return NextResponse.json({ error: companiesError.message }, { status: 500 })
   }
 

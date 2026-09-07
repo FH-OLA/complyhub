@@ -5,6 +5,10 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(),
 }))
 
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+}))
+
 vi.mock('stripe', () => {
   const mockStripe = {
     billingPortal: {
@@ -17,10 +21,12 @@ vi.mock('stripe', () => {
 })
 
 import Stripe from 'stripe'
+import * as Sentry from '@sentry/nextjs'
 import { createClient } from '@/lib/supabase/server'
 import { POST } from '@/app/api/stripe/portal/route'
 
 const mockedCreateClient = vi.mocked(createClient)
+const mockedSentryCapture = vi.mocked(Sentry.captureException)
 const stripeInstance = new (Stripe as unknown as new () => {
   billingPortal: { sessions: { create: ReturnType<typeof vi.fn> } }
 })()
@@ -100,5 +106,67 @@ describe('POST /api/stripe/portal', () => {
 
     const res = await POST()
     expect(res.status).toBe(500)
+  })
+
+  it('captures the portal failure with operational tags only', async () => {
+    supabase.auth.getUser.mockResolvedValue({
+      data: { user: { id: 'u1' } },
+    })
+    supabase.from.mockReturnValueOnce(
+      makeQueryChain({ data: { stripe_customer_id: 'cus_abc' } }),
+    )
+    const error = new Error('Stripe API error')
+    stripeInstance.billingPortal.sessions.create.mockRejectedValue(error)
+
+    await POST()
+
+    expect(mockedSentryCapture).toHaveBeenCalledTimes(1)
+    const [captured, context] = mockedSentryCapture.mock.calls[0]
+    expect(captured).toBe(error)
+    expect(context).toEqual({
+      tags: { subsystem: 'stripe', operation: 'portal_session_create' },
+    })
+
+    // No customer id, user id, or return URL anywhere in the payload.
+    const serialised = JSON.stringify(context)
+    expect(serialised).not.toContain('cus_abc')
+    expect(serialised).not.toContain('u1')
+    expect(serialised).not.toContain('my-companies')
+  })
+
+  it('still returns 500 when Sentry capture itself throws', async () => {
+    mockedSentryCapture.mockImplementation(() => {
+      throw new Error('Sentry transport failure')
+    })
+    supabase.auth.getUser.mockResolvedValue({
+      data: { user: { id: 'u1' } },
+    })
+    supabase.from.mockReturnValueOnce(
+      makeQueryChain({ data: { stripe_customer_id: 'cus_abc' } }),
+    )
+    stripeInstance.billingPortal.sessions.create.mockRejectedValue(
+      new Error('Stripe API error'),
+    )
+
+    const res = await POST()
+    expect(res.status).toBe(500)
+    const body = await res.json()
+    expect(body.error).toBe('Failed to open billing portal')
+  })
+
+  it('does not capture on the success path', async () => {
+    supabase.auth.getUser.mockResolvedValue({
+      data: { user: { id: 'u1' } },
+    })
+    supabase.from.mockReturnValueOnce(
+      makeQueryChain({ data: { stripe_customer_id: 'cus_abc' } }),
+    )
+    stripeInstance.billingPortal.sessions.create.mockResolvedValue({
+      url: 'https://billing.stripe.com/session',
+    })
+
+    const res = await POST()
+    expect(res.status).toBe(200)
+    expect(mockedSentryCapture).not.toHaveBeenCalled()
   })
 })

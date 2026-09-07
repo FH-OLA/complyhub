@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -86,4 +86,11 @@ export default withSentryConfig(nextConfig, {
   project: 'complyhub',
   silent: !process.env.CI,
   authToken: process.env.SENTRY_AUTH_TOKEN,
+  // Build-plugin usage telemetry sent to Sentry's own org. Unrelated to our
+  // error delivery, release creation, or source-map upload.
+  telemetry: false,
+  // `onRequestError` is exported from instrumentation.ts, but the
+  // `onRouterTransitionStart` navigation hook is deliberately omitted: it only
+  // feeds browser tracing spans, which this project does not collect.
+  suppressOnRouterTransitionStartWarning: true,
 });

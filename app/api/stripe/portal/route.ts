@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { captureStripeError } from '@/lib/monitoring'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
@@ -39,6 +40,10 @@ export async function POST() {
     return NextResponse.json({ url: session.url })
   } catch (error) {
     console.error('Stripe portal error:', error)
+    captureStripeError(error, {
+      subsystem: 'stripe',
+      operation: 'portal_session_create',
+    })
     return NextResponse.json({ error: 'Failed to open billing portal' }, { status: 500 })
   }
 }

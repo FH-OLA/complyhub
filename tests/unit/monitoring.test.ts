@@ -5,7 +5,7 @@ vi.mock('@sentry/nextjs', () => ({
 }))
 
 import * as Sentry from '@sentry/nextjs'
-import { captureStripeError, scrubEvent } from '@/lib/monitoring'
+import { captureError, captureStripeError, scrubEvent } from '@/lib/monitoring'
 
 const mockedCapture = vi.mocked(Sentry.captureException)
 
@@ -160,5 +160,104 @@ describe('captureStripeError', () => {
         operation: 'test',
       })
     }).not.toThrow()
+  })
+})
+
+describe('scrubEvent — infrastructure and locale context', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('removes the ephemeral server_name', () => {
+    const event = scrubEvent({
+      server_name: 'ip-10-0-42-7.ec2.internal',
+      contexts: { runtime: { name: 'node', version: 'v22.0.0' } },
+    } as unknown as Sentry.ErrorEvent)
+
+    expect(event!.server_name).toBeUndefined()
+  })
+
+  it('removes the dependency inventory but keeps runtime, os, and device', () => {
+    const event = scrubEvent({
+      modules: { next: '16.3.2', stripe: '20.1.0', '@sentry/nextjs': '10.73.0' },
+      contexts: {
+        runtime: { name: 'node', version: 'v22.0.0' },
+        os: { name: 'Linux', version: '5.10' },
+        device: { arch: 'x64', memory_size: 2048 },
+      },
+    } as unknown as Sentry.ErrorEvent)
+
+    expect(event!.modules).toBeUndefined()
+    expect(event!.contexts!.runtime).toEqual({ name: 'node', version: 'v22.0.0' })
+    expect(event!.contexts!.os).toEqual({ name: 'Linux', version: '5.10' })
+    expect(event!.contexts!.device).toEqual({ arch: 'x64', memory_size: 2048 })
+  })
+
+  it('removes culture context but keeps runtime, os, and device', () => {
+    const event = scrubEvent({
+      contexts: {
+        culture: { locale: 'en-GB', timezone: 'Europe/London' },
+        runtime: { name: 'node', version: 'v22.0.0' },
+        os: { name: 'Linux' },
+        device: { arch: 'x64' },
+      },
+    } as unknown as Sentry.ErrorEvent)
+
+    expect(event!.contexts!.culture).toBeUndefined()
+    expect(event!.contexts!.runtime).toEqual({ name: 'node', version: 'v22.0.0' })
+    expect(event!.contexts!.os).toEqual({ name: 'Linux' })
+    expect(event!.contexts!.device).toEqual({ arch: 'x64' })
+  })
+
+  it('removes user.geo alongside the other user identifiers', () => {
+    const event = scrubEvent({
+      user: {
+        id: 'u1',
+        email: 'founder@example.com',
+        ip_address: '1.2.3.4',
+        geo: { city: 'Ashburn', country_code: 'US' },
+      },
+    } as unknown as Sentry.ErrorEvent)
+
+    expect(event!.user!.email).toBeUndefined()
+    expect(event!.user!.ip_address).toBeUndefined()
+    expect((event!.user as Record<string, unknown>).geo).toBeUndefined()
+  })
+
+  it('tolerates events with no contexts, user, or server_name', () => {
+    expect(() => scrubEvent({} as unknown as Sentry.ErrorEvent)).not.toThrow()
+  })
+})
+
+describe('captureError', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('forwards only the allow-listed tags, with no extra payload', () => {
+    const error = new Error('db unavailable')
+
+    captureError(error, { subsystem: 'alerts', operation: 'daily_alert_cron' })
+
+    expect(mockedCapture).toHaveBeenCalledTimes(1)
+    const [captured, context] = mockedCapture.mock.calls[0]
+    expect(captured).toBe(error)
+    expect(context).toEqual({
+      tags: { subsystem: 'alerts', operation: 'daily_alert_cron' },
+    })
+    expect((context as Record<string, unknown>).extra).toBeUndefined()
+  })
+
+  it('does not throw when Sentry.captureException throws', () => {
+    mockedCapture.mockImplementation(() => {
+      throw new Error('Sentry is down')
+    })
+
+    expect(() =>
+      captureError(new Error('test'), {
+        subsystem: 'alerts',
+        operation: 'daily_alert_cron',
+      }),
+    ).not.toThrow()
   })
 })

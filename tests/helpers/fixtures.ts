@@ -79,6 +79,42 @@ export const dormantCompany: CompaniesHouseCompany = {
   accounts: { next_due: '2026-01-20', last_accounts: { made_up_to: '2025-01-10', type: 'dormant' } },
 }
 
+/**
+ * Active company sitting INSIDE the 14-day confirmation statement filing window.
+ *
+ * Modelled on a real Companies House record (LAUDEM ENTERPRISE LTD, 13449829):
+ * the review period has ended (next_made_up_to is in the past relative to
+ * TEST_DATE) but the statutory filing deadline has not (next_due is in the
+ * future), so the company is NOT overdue.
+ *
+ * Unlike the other fixtures, next_due here is deliberately NOT equal to
+ * last_made_up_to + 1 year — that is what real Companies House data looks like,
+ * and it is the only shape that can distinguish the authoritative next_due from
+ * a derived review-period date.
+ */
+export const filingWindowCompany: CompaniesHouseCompany = {
+  company_name:   'Filing Window Test Ltd',
+  company_number: '10101010',
+  company_status: 'active',
+  company_type:   'private-limited-company',
+  date_of_creation: '2019-12-26',
+  registered_office_address: {
+    address_line_1: '5 Window Way',
+    locality:       'Leeds',
+    postal_code:    'LS1 1AA',
+  },
+  sic_codes: ['62020'],
+  // Review period ended 2025-12-26 (6 days BEFORE TEST_DATE); the statutory
+  // 14-day window runs to 2026-01-09 (8 days AFTER TEST_DATE) → due_soon, not overdue.
+  confirmation_statement: {
+    last_made_up_to: '2024-12-26',
+    next_made_up_to: '2025-12-26',
+    next_due:        '2026-01-09',
+  },
+  // Accounts comfortably on track so the fixture isolates confirmation statement behaviour.
+  accounts: { next_due: '2026-09-01', last_accounts: { made_up_to: '2025-03-31', type: 'full' } },
+}
+
 /** Dissolved company — no compliance obligations. */
 export const dissolvedCompany: CompaniesHouseCompany = {
   company_name:   'Dissolved Test Ltd',

@@ -8,6 +8,7 @@ import EmptyState from '@/components/ui/EmptyState'
 import type { CompaniesHouseCompany } from '@/lib/companies-house/client'
 import type { ComplianceResult } from '@/lib/compliance'
 import { calculateHealthScore, getHealthTier } from '@/lib/health-score'
+import { buildScheduledCancellationNotice } from '@/lib/subscription'
 
 interface TrackedCompany {
   id: string
@@ -47,11 +48,14 @@ export default async function MyCompaniesPage() {
 
   const { data: subscription } = await supabase
     .from('user_subscriptions')
-    .select('plan, status')
+    .select('plan, status, cancel_at_period_end, current_period_end')
     .eq('user_id', user.id)
     .maybeSingle()
 
   const isProUser = subscription?.plan === 'pro' && subscription?.status === 'active'
+
+  // Non-null only while an active Pro subscription is scheduled to end.
+  const cancellationNotice = buildScheduledCancellationNotice(subscription)
 
   const { data: companies, error: dbError } = await supabase
     .from('tracked_companies')
@@ -150,6 +154,17 @@ export default async function MyCompaniesPage() {
           ) : null}
         </div>
       </div>
+
+      {/* SCHEDULED CANCELLATION — shown only while Pro is active and ending */}
+      {cancellationNotice && (
+        <div className="mb-6 rounded-[var(--card-radius)] border border-semantic-amber-bg bg-semantic-amber-bg p-4">
+          <p className="text-sm font-medium text-semantic-amber-text">{cancellationNotice}</p>
+          <p className="mt-1 text-xs text-semantic-amber-text">
+            Changed your mind? You can resume your subscription from{' '}
+            <span className="font-semibold">Manage subscription</span> above.
+          </p>
+        </div>
+      )}
 
       <div className="h-px bg-border-light" />
 

@@ -8,6 +8,23 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
 })
 
+/**
+ * Resolve when the current billing period ends, in ISO form.
+ *
+ * At API version 2026-03-25.dahlia `current_period_end` no longer exists on the
+ * Subscription object — it lives on each subscription item. `cancel_at` is used
+ * as a fallback because Stripe sets it to the scheduled cancellation instant
+ * when a customer cancels at period end.
+ *
+ * Returns null when neither is available rather than guessing a date.
+ */
+function resolvePeriodEnd(subscription: Stripe.Subscription): string | null {
+  const epochSeconds =
+    subscription.items?.data?.[0]?.current_period_end ?? subscription.cancel_at ?? null
+
+  return epochSeconds ? new Date(epochSeconds * 1000).toISOString() : null
+}
+
 export async function POST(req: Request) {
   const body = await req.text()
   const signature = (await headers()).get('stripe-signature')
@@ -89,6 +106,12 @@ export async function POST(req: Request) {
           stripe_subscription_id: subscriptionId,
           plan: 'pro',
           status: 'active',
+          // A re-subscribing customer may still carry the scheduled-cancellation
+          // flag from their previous subscription. This is a brand-new
+          // subscription, so clear it. `current_period_end` is repopulated by the
+          // next customer.subscription.updated and is only read when this flag is
+          // true, so a stale value here is never surfaced.
+          cancel_at_period_end: false,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' }
@@ -127,10 +150,18 @@ export async function POST(req: Request) {
   if (event.type === 'customer.subscription.updated') {
     const subscription = event.data.object as Stripe.Subscription
 
+    // `status` stays 'active' when a customer cancels at period end — Stripe
+    // only flips it to 'canceled' once the period actually elapses. Persisting
+    // cancel_at_period_end alongside it is what lets ComplyHub tell the customer
+    // their access is ending without revoking it early. Setting the flag from
+    // Stripe on every update also clears it automatically when a cancellation is
+    // reversed ("renew subscription" in the Portal sends false).
     const { error: updateError } = await supabase
       .from('user_subscriptions')
       .update({
         status: subscription.status,
+        cancel_at_period_end: subscription.cancel_at_period_end,
+        current_period_end: resolvePeriodEnd(subscription),
         updated_at: new Date().toISOString(),
       })
       .eq('stripe_subscription_id', subscription.id)
@@ -159,6 +190,9 @@ export async function POST(req: Request) {
       .update({
         plan: 'free',
         status: 'cancelled',
+        // The cancellation has now happened, so it is no longer *scheduled*.
+        // Clearing this keeps the "ends on <date>" notice from outliving access.
+        cancel_at_period_end: false,
         updated_at: new Date().toISOString(),
       })
       .eq('stripe_subscription_id', subscription.id)

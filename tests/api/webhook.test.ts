@@ -498,4 +498,205 @@ describe('POST /api/stripe/webhook', () => {
     errorSpy.mockRestore()
   })
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // Scheduled cancellation lifecycle
+  //
+  // Cancelling at period end leaves Stripe's status as 'active' until the
+  // period elapses. The row must keep Pro entitlement while recording that the
+  // cancellation is scheduled and when access ends.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  const PERIOD_END_EPOCH = 1791590400 // 2026-10-10T00:00:00.000Z
+
+  /** Query chain that records the payload passed to update/upsert. */
+  function makeCapturingChain(result: { data: unknown; error: unknown } = { data: null, error: null }) {
+    const captured: Record<string, unknown[]> = { update: [], upsert: [], insert: [], delete: [] }
+    const chain: Record<string, unknown> = new Proxy(
+      {},
+      {
+        get(_target, prop: string) {
+          if (prop === 'then') {
+            return (resolve: (v: typeof result) => unknown) => Promise.resolve(result).then(resolve)
+          }
+          if (prop === 'maybeSingle' || prop === 'single') {
+            return () => Promise.resolve(result)
+          }
+          return (...args: unknown[]) => {
+            if (captured[prop]) captured[prop].push(args[0])
+            return chain
+          }
+        },
+      },
+    )
+    return { chain, captured }
+  }
+
+  it('keeps Pro active and records the scheduled cancellation', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_cancel_scheduled',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: true,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    const res = await POST(makeWebhookRequest())
+    expect(res.status).toBe(200)
+
+    const payload = captured.update[0] as Record<string, unknown>
+    // Entitlement is NOT revoked early.
+    expect(payload.status).toBe('active')
+    expect(payload).not.toHaveProperty('plan')
+    // Scheduled cancellation is recorded.
+    expect(payload.cancel_at_period_end).toBe(true)
+    expect(payload.current_period_end).toBe('2026-10-10T00:00:00.000Z')
+  })
+
+  it('stores current_period_end from the subscription item, not the subscription', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_period_end',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: false,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.current_period_end).toBe('2026-10-10T00:00:00.000Z')
+  })
+
+  it('falls back to cancel_at when the subscription has no items', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_cancel_at_fallback',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: true,
+          cancel_at: PERIOD_END_EPOCH,
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.current_period_end).toBe('2026-10-10T00:00:00.000Z')
+  })
+
+  it('stores a null period end rather than guessing when Stripe supplies neither', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_no_period',
+      type: 'customer.subscription.updated',
+      data: { object: { id: 'sub_xyz', status: 'active', cancel_at_period_end: false } },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.current_period_end).toBeNull()
+  })
+
+  it('clears the scheduled cancellation when the customer reverses it', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_cancel_reversed',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: false,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    const res = await POST(makeWebhookRequest())
+    expect(res.status).toBe(200)
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.cancel_at_period_end).toBe(false)
+    expect(payload.status).toBe('active')
+  })
+
+  it('downgrades and clears the scheduled flag when the subscription actually ends', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_sub_actually_deleted',
+      type: 'customer.subscription.deleted',
+      data: { object: { id: 'sub_xyz' } },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    const res = await POST(makeWebhookRequest())
+    expect(res.status).toBe(200)
+
+    const payload = captured.update[0] as Record<string, unknown>
+    // Existing downgrade behaviour is intact.
+    expect(payload.plan).toBe('free')
+    expect(payload.status).toBe('cancelled')
+    // No longer "scheduled" — it has happened.
+    expect(payload.cancel_at_period_end).toBe(false)
+  })
+
+  it('clears a stale scheduled cancellation when a customer re-subscribes', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_resubscribe',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          metadata: { user_id: 'user-123' },
+          customer: 'cus_abc',
+          subscription: 'sub_new',
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    const res = await POST(makeWebhookRequest())
+    expect(res.status).toBe(200)
+
+    const payload = captured.upsert[0] as Record<string, unknown>
+    expect(payload.plan).toBe('pro')
+    expect(payload.status).toBe('active')
+    expect(payload.cancel_at_period_end).toBe(false)
+  })
 })

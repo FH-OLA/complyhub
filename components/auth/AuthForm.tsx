@@ -19,6 +19,33 @@ const CALLBACK_ERROR_MESSAGES: Record<string, string> = {
   link_invalid: 'This link has expired or has already been used. Please request a new one.',
 }
 
+/**
+ * The exact payload sent to supabase.auth.signUp.
+ *
+ * `emailRedirectTo` is required. Without it Supabase falls back to the
+ * project's Site URL and returns the PKCE code to the marketing homepage,
+ * which has no code-exchange handler — so a user who clicks "Confirm your
+ * mail" lands logged out and the confirmation is silently lost (reproduced in
+ * production: https://complyhub.uk/?code=<PKCE_AUTH_CODE>).
+ *
+ * Built from NEXT_PUBLIC_BASE_URL, the same source of truth used by the
+ * password-reset flow and every Stripe redirect — never a hardcoded host.
+ *
+ * No `?next=` is appended: /auth/callback already defaults to /dashboard,
+ * which matches where an immediate-session signup is sent.
+ *
+ * Exported so the redirect target can be asserted without rendering the form.
+ */
+export function buildSignUpCredentials(email: string, password: string) {
+  return {
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+    },
+  }
+}
+
 function safeRedirect(value: string | undefined): string {
   if (!value) return '/dashboard'
   if (value.startsWith('/') && !value.startsWith('//')) return value
@@ -60,7 +87,9 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
         router.refresh()
       }
     } else {
-      const { data, error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp(
+        buildSignUpCredentials(email, password),
+      )
       if (error) {
         setError(error.message)
       } else if (data.session) {

@@ -540,7 +540,10 @@ describe('POST /api/stripe/webhook', () => {
         object: {
           id: 'sub_xyz',
           status: 'active',
-          cancel_at_period_end: true,
+          // Real Portal shape: Stripe signals the scheduled cancellation via
+          // cancel_at and leaves the legacy boolean false.
+          cancel_at_period_end: false,
+          cancel_at: PERIOD_END_EPOCH,
           items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
         },
       },
@@ -594,7 +597,7 @@ describe('POST /api/stripe/webhook', () => {
         object: {
           id: 'sub_xyz',
           status: 'active',
-          cancel_at_period_end: true,
+          cancel_at_period_end: false,
           cancel_at: PERIOD_END_EPOCH,
         },
       },
@@ -698,5 +701,185 @@ describe('POST /api/stripe/webhook', () => {
     expect(payload.plan).toBe('pro')
     expect(payload.status).toBe('active')
     expect(payload.cancel_at_period_end).toBe(false)
+  })
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Scheduled-cancellation derivation
+  //
+  // Stripe represents a scheduled cancellation two ways depending on billing
+  // mode: the legacy cancel_at_period_end boolean, or a non-null cancel_at with
+  // that boolean left false. Production uses the second form, so reading the
+  // boolean alone recorded every Portal cancellation as "not cancelling".
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // 2026-10-10T17:25:34.000Z — the exact instant from the production repro.
+  const PROD_CANCEL_AT_EPOCH = 1791653134
+  // 2026-11-15T00:00:00.000Z — deliberately NOT the item period end.
+  const ARBITRARY_CANCEL_AT_EPOCH = 1794700800
+
+  it('records a scheduled cancellation from cancel_at when the legacy boolean is false', async () => {
+    // Exact production shape for sub_1UEBjADEDTV3wonIa3HXWIZu.
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_prod_repro',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: false,
+          cancel_at: PROD_CANCEL_AT_EPOCH,
+          items: { data: [{ current_period_end: PROD_CANCEL_AT_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    const res = await POST(makeWebhookRequest())
+    expect(res.status).toBe(200)
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.status).toBe('active')
+    expect(payload).not.toHaveProperty('plan')       // Pro is not revoked early
+    expect(payload.cancel_at_period_end).toBe(true)  // derived, not copied
+    expect(payload.current_period_end).toBe('2026-10-10T17:25:34.000Z')
+  })
+
+  it('honours the legacy shape where cancel_at_period_end is true and cancel_at is null', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_legacy_shape',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: true,
+          cancel_at: null,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.cancel_at_period_end).toBe(true)
+    expect(payload.current_period_end).toBe('2026-10-10T00:00:00.000Z')
+  })
+
+  it('clears the scheduled cancellation when both signals are absent', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_reversal_both_clear',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: false,
+          cancel_at: null,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.cancel_at_period_end).toBe(false)
+    expect(payload.status).toBe('active')
+  })
+
+  it('prefers cancel_at over the item period end when they differ', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_arbitrary_cancel_at',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: false,
+          cancel_at: ARBITRARY_CANCEL_AT_EPOCH,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.cancel_at_period_end).toBe(true)
+    // The customer-facing end date is when service actually stops.
+    expect(payload.current_period_end).toBe('2026-11-15T00:00:00.000Z')
+    expect(payload.current_period_end).not.toBe('2026-10-10T00:00:00.000Z')
+  })
+
+  it('does not report a terminally cancelled subscription as scheduled to cancel', async () => {
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_terminal_canceled',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'canceled',
+          cancel_at_period_end: false,
+          // Stripe leaves both of these populated after the cancellation lands.
+          cancel_at: PERIOD_END_EPOCH,
+          canceled_at: PERIOD_END_EPOCH,
+          items: { data: [{ current_period_end: PERIOD_END_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.status).toBe('canceled')
+    expect(payload.cancel_at_period_end).toBe(false)
+  })
+
+  it('treats canceled_at alone as a request timestamp, not a terminal state', async () => {
+    // Stripe sets canceled_at to the time of the cancellation REQUEST, so it is
+    // non-null while the subscription is still active and serving.
+    mockedHeaders.mockResolvedValue(makeHeadersMap() as never)
+    stripeInstance.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_canceled_at_while_active',
+      type: 'customer.subscription.updated',
+      data: {
+        object: {
+          id: 'sub_xyz',
+          status: 'active',
+          cancel_at_period_end: false,
+          cancel_at: PROD_CANCEL_AT_EPOCH,
+          canceled_at: 1789000000,
+          items: { data: [{ current_period_end: PROD_CANCEL_AT_EPOCH }] },
+        },
+      },
+    })
+    const { chain, captured } = makeCapturingChain()
+    adminClient.from.mockReturnValueOnce(makeQueryChain({ data: null, error: null }))
+    adminClient.from.mockReturnValueOnce(chain as never)
+
+    await POST(makeWebhookRequest())
+
+    const payload = captured.update[0] as Record<string, unknown>
+    expect(payload.cancel_at_period_end).toBe(true)
   })
 })

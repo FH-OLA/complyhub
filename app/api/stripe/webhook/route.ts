@@ -8,19 +8,54 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-03-25.dahlia',
 })
 
+// Subscription statuses that mean the subscription has already ended. A
+// subscription in one of these is not "scheduled" to cancel — it is done.
+const TERMINAL_SUBSCRIPTION_STATUSES = new Set(['canceled', 'incomplete_expired'])
+
 /**
- * Resolve when the current billing period ends, in ISO form.
+ * Whether a cancellation is scheduled but has not yet taken effect.
  *
- * At API version 2026-03-25.dahlia `current_period_end` no longer exists on the
- * Subscription object — it lives on each subscription item. `cancel_at` is used
- * as a fallback because Stripe sets it to the scheduled cancellation instant
- * when a customer cancels at period end.
+ * Stripe represents this two different ways depending on billing mode:
+ *
+ *   • legacy — `cancel_at_period_end: true`
+ *   • current — `cancel_at` set to the instant the subscription will end, with
+ *     `cancel_at_period_end` left FALSE
+ *
+ * The Customer Portal's "cancel at period end" uses the second form on this
+ * account (verified in production: Stripe showed "Scheduled to cancel on
+ * Oct 10, 5:25 PM" while cancel_at_period_end was false). Reading only the
+ * boolean therefore missed every Portal-initiated cancellation.
+ *
+ * `canceled_at` is deliberately NOT used as the terminal signal: Stripe sets it
+ * to the time of the cancellation *request*, so it is non-null while the
+ * subscription is still active and serving.
+ */
+function hasScheduledCancellation(subscription: Stripe.Subscription): boolean {
+  if (TERMINAL_SUBSCRIPTION_STATUSES.has(subscription.status)) return false
+  if (subscription.cancel_at_period_end === true) return true
+  return subscription.cancel_at != null
+}
+
+/**
+ * Resolve the date the customer's service actually ends, in ISO form.
+ *
+ * `cancel_at` wins when present: it is the instant Stripe will end the
+ * subscription, which is what the customer needs to be told. It equals the
+ * period end for an ordinary cancel-at-period-end, but diverges when a
+ * cancellation is scheduled for some other future date.
+ *
+ * Otherwise fall back to the item's period end — at API version
+ * 2026-03-25.dahlia `current_period_end` no longer exists on the Subscription
+ * object, only on each subscription item.
  *
  * Returns null when neither is available rather than guessing a date.
+ *
+ * (The column is named current_period_end for historical reasons; it holds the
+ * end-of-service date.)
  */
-function resolvePeriodEnd(subscription: Stripe.Subscription): string | null {
+function resolveServiceEndDate(subscription: Stripe.Subscription): string | null {
   const epochSeconds =
-    subscription.items?.data?.[0]?.current_period_end ?? subscription.cancel_at ?? null
+    subscription.cancel_at ?? subscription.items?.data?.[0]?.current_period_end ?? null
 
   return epochSeconds ? new Date(epochSeconds * 1000).toISOString() : null
 }
@@ -155,13 +190,13 @@ export async function POST(req: Request) {
     // cancel_at_period_end alongside it is what lets ComplyHub tell the customer
     // their access is ending without revoking it early. Setting the flag from
     // Stripe on every update also clears it automatically when a cancellation is
-    // reversed ("renew subscription" in the Portal sends false).
+    // reversed (the Portal's "renew subscription" clears both signals).
     const { error: updateError } = await supabase
       .from('user_subscriptions')
       .update({
         status: subscription.status,
-        cancel_at_period_end: subscription.cancel_at_period_end,
-        current_period_end: resolvePeriodEnd(subscription),
+        cancel_at_period_end: hasScheduledCancellation(subscription),
+        current_period_end: resolveServiceEndDate(subscription),
         updated_at: new Date().toISOString(),
       })
       .eq('stripe_subscription_id', subscription.id)

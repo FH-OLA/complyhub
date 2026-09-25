@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { makeAdminClient, makeQueryChain } from '../helpers/supabase-mock'
-import { TEST_DATE, dormantCompany } from '../helpers/fixtures'
+import { TEST_DATE, dormantCompany, overdueCompany } from '../helpers/fixtures'
 
 vi.mock('@/lib/supabase/admin', () => ({
   createAdminClient: vi.fn(),
@@ -47,11 +47,19 @@ function makeRequest(secret: string = CRON_SECRET): Request {
 
 /**
  * Chain for alert_history that answers the dedup SELECT and records INSERTs.
- * `existing: null` means "no recent alert", so the candidate is sent.
+ *
+ * `existing: null` (default) means "no recent alert", so the candidate is sent.
+ * `insertErrors` is consumed one entry per INSERT, so a multi-alert email can
+ * have one row succeed and the next fail.
  */
-function makeAlertHistoryChain(inserts: Record<string, unknown>[]) {
-  const selectResult = { data: null, error: null }
-  const insertResult = { data: null, error: null }
+function makeAlertHistoryChain(
+  inserts: Record<string, unknown>[],
+  opts: { existing?: unknown; insertErrorQueue?: (unknown | null)[] } = {},
+) {
+  const selectResult = { data: opts.existing ?? null, error: null }
+  // Shared across chain instances — `from('alert_history')` is called once for
+  // the dedupe SELECT and once per INSERT, so the queue must not reset.
+  const insertErrors = opts.insertErrorQueue ?? []
 
   const chain: Record<string, unknown> = new Proxy(
     {},
@@ -67,6 +75,7 @@ function makeAlertHistoryChain(inserts: Record<string, unknown>[]) {
         if (prop === 'insert') {
           return (payload: Record<string, unknown>) => {
             inserts.push(payload)
+            const insertResult = { data: null, error: insertErrors.shift() ?? null }
             return {
               then: (resolve: (v: typeof insertResult) => unknown) =>
                 Promise.resolve(insertResult).then(resolve),
@@ -82,14 +91,22 @@ function makeAlertHistoryChain(inserts: Record<string, unknown>[]) {
 
 type TrackedRow = { id: string; user_id: string; company_name: string; company_number: string }
 
-function setupAdmin(companies: TrackedRow[]) {
+function setupAdmin(
+  companies: TrackedRow[],
+  historyOpts: { existing?: unknown; insertErrors?: (unknown | null)[] } = {},
+) {
   const alertHistoryInserts: Record<string, unknown>[] = []
+  const insertErrorQueue = [...(historyOpts.insertErrors ?? [])]
   const admin = makeAdminClient()
 
   admin.from.mockImplementation((table: string) => {
     if (table === 'tracked_companies') return makeQueryChain({ data: companies, error: null })
     if (table === 'email_preferences') return makeQueryChain({ data: [], error: null })
-    if (table === 'alert_history') return makeAlertHistoryChain(alertHistoryInserts)
+    if (table === 'alert_history')
+      return makeAlertHistoryChain(alertHistoryInserts, {
+        existing: historyOpts.existing,
+        insertErrorQueue,
+      })
     return makeQueryChain({ data: null, error: null })
   })
 
@@ -336,5 +353,169 @@ describe('GET /api/alerts/run — Resend failure reporting', () => {
     expect(mockedCapture).not.toHaveBeenCalled()
 
     errorSpy.mockRestore()
+  })
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // alert_history write failure (E2.3 P2)
+  //
+  // The email has already been delivered when the insert runs, so the send is
+  // never retried and `sent` is not decremented. What is lost is the dedupe
+  // record — the next run re-selects the alert and the customer gets a
+  // duplicate. That risk is deliberately accepted for controlled beta; these
+  // tests exist so a persistent failure is visible rather than silent.
+  // ───────────────────────────────────────────────────────────────────────────
+
+  // Synthetic Supabase error whose free-text fields are baited with data that
+  // must never reach Sentry.
+  const BAIT_INSERT_ERROR = {
+    code:    '23505',
+    message: `duplicate key violates constraint for ${RECIPIENT}`,
+    details: 'Key (user_id, company_number)=(user-a, 11223344) already exists.',
+    hint:    `Check ${RECIPIENT} and company 11223344`,
+  }
+
+  function okSend() {
+    resendInstance.emails.send.mockResolvedValue({
+      data: { id: 'email_123' },
+      error: null,
+      headers: null,
+    })
+  }
+
+  // ── A. Send succeeds, history insert fails ─────────────────────────────────
+
+  it('captures a history-write failure without retrying the delivered email', async () => {
+    const { alertHistoryInserts } = setupAdmin([COMPANY_A], { insertErrors: [BAIT_INSERT_ERROR] })
+    okSend()
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(mockedCapture).toHaveBeenCalledTimes(1)
+
+    const [, context] = mockedCapture.mock.calls[0]
+    expect(context).toEqual({
+      tags: { subsystem: 'alerts', operation: 'reminder_history_write' },
+    })
+
+    // The email WAS delivered, so it still counts as sent.
+    expect(body.sent).toBe(1)
+    expect(body.history_write_failures).toBe(1)
+    expect(body.skipped).toBe(0)
+
+    // The insert was attempted; it simply did not persist.
+    expect(alertHistoryInserts).toHaveLength(1)
+    expect(resendInstance.emails.send).toHaveBeenCalledTimes(1)
+  })
+
+  // ── B. Privacy ─────────────────────────────────────────────────────────────
+
+  it('reports only the SQLSTATE code, never the baited error fields', async () => {
+    setupAdmin([COMPANY_A], { insertErrors: [BAIT_INSERT_ERROR] })
+    okSend()
+
+    await GET(makeRequest())
+
+    const [captured, context] = mockedCapture.mock.calls[0]
+    expect(captured).toBeInstanceOf(Error)
+
+    const serialised = `${(captured as Error).message} ${JSON.stringify(context)}`
+
+    expect(serialised).toContain('23505')          // safe: fixed SQLSTATE code
+
+    expect(serialised).not.toContain(RECIPIENT)
+    expect(serialised).not.toContain('@')          // no address in any form
+    expect(serialised).not.toContain('11223344')   // no company number
+    expect(serialised).not.toContain('user-a')     // no user id
+    expect(serialised).not.toContain('duplicate key')   // no message text
+    expect(serialised).not.toContain('already exists')  // no details text
+    expect(serialised).not.toContain('Check ')          // no hint text
+  })
+
+  // ── C. Successful history write ────────────────────────────────────────────
+
+  it('captures nothing and reports zero failures when the history write succeeds', async () => {
+    const { alertHistoryInserts } = setupAdmin([COMPANY_A])
+    okSend()
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(mockedCapture).not.toHaveBeenCalled()
+    expect(body.sent).toBe(1)
+    expect(body.history_write_failures).toBe(0)
+    expect(alertHistoryInserts).toHaveLength(1)
+  })
+
+  // ── D. Multi-alert partial failure ─────────────────────────────────────────
+
+  it('counts one send and one failure when a multi-alert email persists partially', async () => {
+    // overdueCompany yields TWO eligible alerts at TEST_DATE (CS -214 days,
+    // accounts -306 days), bundled into a single email but inserted as two rows.
+    mockedFetchCompany.mockResolvedValue(overdueCompany)
+    const { alertHistoryInserts } = setupAdmin([COMPANY_A], {
+      insertErrors: [null, BAIT_INSERT_ERROR],
+    })
+    okSend()
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+
+    // One email carried both obligations.
+    expect(resendInstance.emails.send).toHaveBeenCalledTimes(1)
+    expect(body.sent).toBe(1)
+
+    // Two inserts attempted, one failed.
+    expect(alertHistoryInserts).toHaveLength(2)
+    expect(body.history_write_failures).toBe(1)
+    expect(mockedCapture).toHaveBeenCalledTimes(1)
+  })
+
+  // ── E. Monitoring fail-safe ────────────────────────────────────────────────
+
+  it('still reports the failure count when Sentry capture itself throws', async () => {
+    setupAdmin([COMPANY_A], { insertErrors: [BAIT_INSERT_ERROR] })
+    mockedCapture.mockImplementation(() => {
+      throw new Error('Sentry transport failure')
+    })
+    okSend()
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(body.success).toBe(true)
+    expect(body.sent).toBe(1)
+    expect(body.history_write_failures).toBe(1)
+  })
+
+  // ── F. Dedupe implication — the accepted residual duplicate risk ───────────
+
+  it('skips an alert that already has a history row', async () => {
+    // A persisted row inside the 24-hour window suppresses the reminder.
+    setupAdmin([COMPANY_A], { existing: { id: 'existing-history-row' } })
+    okSend()
+
+    const body = await (await GET(makeRequest())).json()
+
+    expect(resendInstance.emails.send).not.toHaveBeenCalled()
+    expect(body.sent).toBe(0)
+    expect(body.skipped).toBe(1)
+  })
+
+  it('re-selects the alert when no history row exists — the duplicate path', async () => {
+    // This is exactly the state a failed insert leaves behind: the email was
+    // delivered, but with no row the next run sends it again.
+    setupAdmin([COMPANY_A], { existing: null })
+    okSend()
+
+    const body = await (await GET(makeRequest())).json()
+
+    expect(resendInstance.emails.send).toHaveBeenCalledTimes(1)
+    expect(body.sent).toBe(1)
   })
 })

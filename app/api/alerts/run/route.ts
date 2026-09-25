@@ -87,6 +87,10 @@ export async function GET(request: Request) {
   let processed = 0
   let sent      = 0
   let skipped   = 0
+  // Counts alert_history rows that could not be persisted after their email was
+  // successfully sent. Deliberately separate from `sent`: the email genuinely
+  // went out, so counting it as a failure would misreport a delivered reminder.
+  let historyWriteFailures = 0
 
   const BATCH_SIZE = 5
 
@@ -264,7 +268,25 @@ export async function GET(request: Request) {
             })
 
             if (insertError) {
+              historyWriteFailures++
               console.error(`alert_history insert failed for ${company.company_number}:`, insertError)
+              // The email has already been delivered at this point, so the send
+              // is NOT retried and `sent` is not decremented. What is lost is the
+              // dedupe record: without it the next run re-selects this alert and
+              // the customer receives a duplicate reminder. That risk is accepted
+              // for controlled beta (inverting the order would instead risk
+              // suppressing an email that was never sent), but a persistent
+              // failure — schema drift or a missing grant — would otherwise be
+              // invisible behind an HTTP 200.
+              //
+              // Only the SQLSTATE code is reported. `message`, `details` and
+              // `hint` are free text that can echo row values back, so they must
+              // never reach Sentry — as must the recipient, user_id and
+              // company_number interpolated into the log line above.
+              captureError(
+                new Error(`alert_history insert failed: ${insertError.code ?? 'unknown'}`),
+                { subsystem: 'alerts', operation: 'reminder_history_write' },
+              )
             }
           }
 
@@ -277,5 +299,11 @@ export async function GET(request: Request) {
     )
   }
 
-  return NextResponse.json({ success: true, processed, sent, skipped })
+  return NextResponse.json({
+    success: true,
+    processed,
+    sent,
+    skipped,
+    history_write_failures: historyWriteFailures,
+  })
 }

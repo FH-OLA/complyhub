@@ -231,6 +231,23 @@ export async function GET(request: Request) {
           if (sendResult.error) {
             skipped++
             console.error(`Resend failed for ${email}:`, sendResult.error)
+            // The Resend SDK converts every transport failure — including DNS,
+            // timeouts and connection resets — into a RESOLVED { error } object
+            // rather than a throw, so this branch handles effectively all send
+            // failures. Without a capture here a revoked API key, broken domain
+            // authentication or exhausted quota would fail for every recipient,
+            // every day, while the cron kept returning HTTP 200.
+            //
+            // Only `name` (a fixed enum) and `statusCode` are reported.
+            // `sendResult.error.message` is free text that can echo the
+            // offending address back, so it must never reach Sentry — as must
+            // the recipient, user_id and company_number.
+            captureError(
+              new Error(
+                `Resend send failed: ${sendResult.error.name} (status ${sendResult.error.statusCode ?? 'unknown'})`,
+              ),
+              { subsystem: 'alerts', operation: 'compliance_reminder_send' },
+            )
             return
           }
 

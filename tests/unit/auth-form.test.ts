@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { buildSignUpCredentials } from '@/components/auth/AuthForm'
+import { buildPasswordResetRedirect } from '@/app/auth/forgot-password/page'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Signup email-confirmation redirect (P0)
@@ -63,5 +64,108 @@ describe('buildSignUpCredentials', () => {
       password: 'pw',
       options: { emailRedirectTo: 'https://example.test/auth/callback' },
     })
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Missing configuration
+//
+// NEXT_PUBLIC_BASE_URL is inlined at build time for these client components, so
+// an absent value cannot be recovered at runtime. Both builders must fail
+// explicitly rather than interpolate `undefined` into an auth redirect — the
+// exact shape that stranded confirmed users on the marketing homepage.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('auth redirects — missing NEXT_PUBLIC_BASE_URL', () => {
+  const ORIGINAL = process.env.NEXT_PUBLIC_BASE_URL
+
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_BASE_URL = ORIGINAL
+  })
+
+  for (const [label, value] of [
+    ['undefined', undefined],
+    ['empty string', ''],
+  ] as const) {
+    it(`signup fails explicitly when the base URL is ${label}`, () => {
+      if (value === undefined) delete process.env.NEXT_PUBLIC_BASE_URL
+      else process.env.NEXT_PUBLIC_BASE_URL = value
+
+      expect(() => buildSignUpCredentials('new@user.test', 'pw')).toThrow(
+        /NEXT_PUBLIC_BASE_URL is not configured/,
+      )
+    })
+
+    it(`password reset fails explicitly when the base URL is ${label}`, () => {
+      if (value === undefined) delete process.env.NEXT_PUBLIC_BASE_URL
+      else process.env.NEXT_PUBLIC_BASE_URL = value
+
+      expect(() => buildPasswordResetRedirect()).toThrow(
+        /NEXT_PUBLIC_BASE_URL is not configured/,
+      )
+    })
+  }
+
+  it('never produces a URL containing "undefined"', () => {
+    delete process.env.NEXT_PUBLIC_BASE_URL
+
+    // Both must throw rather than return a string — assert on the thrown path
+    // so a future regression that returns "undefined/auth/callback" fails here.
+    let signupResult: unknown = null
+    let resetResult: unknown = null
+    try { signupResult = buildSignUpCredentials('new@user.test', 'pw') } catch { /* expected */ }
+    try { resetResult = buildPasswordResetRedirect() } catch { /* expected */ }
+
+    expect(signupResult).toBeNull()
+    expect(resetResult).toBeNull()
+  })
+
+  it('does not leak the configured value in the error message', () => {
+    process.env.NEXT_PUBLIC_BASE_URL = ''
+
+    const message = (() => {
+      try { buildPasswordResetRedirect(); return '' } catch (e) { return (e as Error).message }
+    })()
+
+    expect(message).toBe('NEXT_PUBLIC_BASE_URL is not configured')
+    expect(message).not.toContain('http')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Password-reset redirect — valid configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('buildPasswordResetRedirect', () => {
+  const ORIGINAL = process.env.NEXT_PUBLIC_BASE_URL
+
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_BASE_URL = 'https://example.test'
+  })
+
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_BASE_URL = ORIGINAL
+  })
+
+  it('routes through the auth callback with the reset-password next target', () => {
+    expect(buildPasswordResetRedirect()).toBe(
+      'https://example.test/auth/callback?next=/auth/reset-password',
+    )
+  })
+
+  it('respects a different configured origin rather than a hardcoded host', () => {
+    process.env.NEXT_PUBLIC_BASE_URL = 'https://staging.example.test'
+
+    const url = buildPasswordResetRedirect()
+    expect(url).toBe('https://staging.example.test/auth/callback?next=/auth/reset-password')
+    expect(url).not.toContain('complyhub.uk')
+  })
+
+  it('keeps the next parameter — the callback would otherwise default to /dashboard', () => {
+    expect(buildPasswordResetRedirect()).toContain('next=/auth/reset-password')
+  })
+
+  it('never contains the literal "undefined"', () => {
+    expect(buildPasswordResetRedirect()).not.toContain('undefined')
   })
 })

@@ -34,17 +34,35 @@ const CALLBACK_ERROR_MESSAGES: Record<string, string> = {
  * No `?next=` is appended: /auth/callback already defaults to /dashboard,
  * which matches where an immediate-session signup is sent.
  *
+ * Throws when NEXT_PUBLIC_BASE_URL is missing or empty rather than
+ * interpolating `undefined` into the redirect. The variable is inlined at build
+ * time for this client component, so an absent value cannot be recovered at
+ * runtime — failing loudly is the only way it becomes visible instead of
+ * producing a silently broken confirmation link.
+ *
  * Exported so the redirect target can be asserted without rendering the form.
  */
 export function buildSignUpCredentials(email: string, password: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
+  if (!baseUrl) {
+    // Names the variable but never its value — this message can surface in logs.
+    throw new Error('NEXT_PUBLIC_BASE_URL is not configured')
+  }
+
   return {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+      emailRedirectTo: `${baseUrl}/auth/callback`,
     },
   }
 }
+
+// Shown when the app is misconfigured. Deliberately free of configuration
+// detail — the specifics belong in logs, not in front of a customer.
+const CONFIG_ERROR_MESSAGE =
+  'Sign-up is temporarily unavailable. Please try again later or contact support.'
 
 function safeRedirect(value: string | undefined): string {
   if (!value) return '/dashboard'
@@ -87,9 +105,19 @@ export default function AuthForm({ mode, next, callbackError }: AuthFormProps) {
         router.refresh()
       }
     } else {
-      const { data, error } = await supabase.auth.signUp(
-        buildSignUpCredentials(email, password),
-      )
+      let credentials: ReturnType<typeof buildSignUpCredentials>
+      try {
+        credentials = buildSignUpCredentials(email, password)
+      } catch {
+        // Misconfiguration, not a user error. Surface it and stop rather than
+        // sending Supabase a redirect that would strand the user after
+        // confirming their email.
+        setError(CONFIG_ERROR_MESSAGE)
+        setLoading(false)
+        return
+      }
+
+      const { data, error } = await supabase.auth.signUp(credentials)
       if (error) {
         setError(error.message)
       } else if (data.session) {

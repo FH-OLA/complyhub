@@ -7,6 +7,35 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Card from '@/components/ui/Card'
 
+/**
+ * The password-reset redirect target.
+ *
+ * Throws when NEXT_PUBLIC_BASE_URL is missing or empty rather than
+ * interpolating `undefined` into the URL. The variable is inlined at build time
+ * for this client component, so an absent value cannot be recovered at runtime.
+ *
+ * `?next=/auth/reset-password` is required: /auth/callback defaults to
+ * /dashboard, which would drop the user past the form where they set a new
+ * password.
+ *
+ * Exported so the redirect target can be asserted without rendering the page.
+ */
+export function buildPasswordResetRedirect(): string {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
+  if (!baseUrl) {
+    // Names the variable but never its value — this message can surface in logs.
+    throw new Error('NEXT_PUBLIC_BASE_URL is not configured')
+  }
+
+  return `${baseUrl}/auth/callback?next=/auth/reset-password`
+}
+
+// Shown when the app is misconfigured. Deliberately free of configuration
+// detail — the specifics belong in logs, not in front of a customer.
+const CONFIG_ERROR_MESSAGE =
+  'Password reset is temporarily unavailable. Please try again later or contact support.'
+
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -17,11 +46,20 @@ export default function ForgotPasswordPage() {
     setError('')
     setLoading(true)
 
+    let redirectTo: string
+    try {
+      redirectTo = buildPasswordResetRedirect()
+    } catch {
+      // Misconfiguration, not a user error. Surface it and stop rather than
+      // emailing a reset link that cannot complete.
+      setError(CONFIG_ERROR_MESSAGE)
+      setLoading(false)
+      return
+    }
+
     const supabase = createClient()
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=/auth/reset-password`,
-    })
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
 
     if (error) {
       setError('Something went wrong. Please try again.')

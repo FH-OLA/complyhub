@@ -87,7 +87,7 @@ export default function Terms() {
               </p>
               <ul className="mt-2 list-disc space-y-1.5 pl-5">
                 <li><strong className="text-text-1">Free plan</strong> — allows you to track a limited number of companies with basic compliance monitoring and email reminders.</li>
-                <li><strong className="text-text-1">Pro plan</strong> — a monthly subscription that provides expanded features including unlimited company tracking, AI features and priority alerts.</li>
+                <li><strong className="text-text-1">Pro plan</strong> — a monthly subscription that provides expanded features including unlimited company tracking and AI features.</li>
               </ul>
               <p className="mt-2">
                 We may change our pricing or plan features with reasonable notice. Any price

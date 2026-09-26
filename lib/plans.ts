@@ -11,7 +11,7 @@ export const PLANS = {
     description: 'For individuals getting started with compliance tracking.',
     features: [
       'Track 1 company',
-      'Basic compliance alerts',
+      'Compliance deadline alerts',
       'Email notifications',
     ],
   },
@@ -22,9 +22,8 @@ export const PLANS = {
     description: 'For businesses that need full compliance coverage.',
     features: [
       'Track unlimited companies',
-      'Priority compliance alerts',
-      'Early deadline warnings',
-      'Future premium features',
+      'Deadline alerts for every company you track',
+      'Confirmation Statement and Annual Accounts reminders',
       'AI Compliance Advisor',
       'AI Filing Assistant',
     ],

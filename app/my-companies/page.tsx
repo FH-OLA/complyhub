@@ -236,7 +236,7 @@ export default async function MyCompaniesPage() {
                     Track unlimited companies with Pro
                   </p>
                   <p className="mt-1 text-xs text-text-2">
-                    Get priority alerts, early deadline warnings, and full compliance coverage.
+                    Get deadline alerts for every company you track, plus AI compliance tools.
                   </p>
                 </div>
                 <a
